@@ -1,7 +1,7 @@
 // Built-in messages, used when messages.json can't be loaded
 // (for example when opening index.html straight from disk).
 export const DEFAULT_MESSAGES = [
-  { lines: ['{red}{orange}{yellow}{green}{blue}{violet}{red}{orange}{yellow}{green}{blue}{violet}{red}{orange}{yellow}{green}{blue}{violet}{red}{orange}{yellow}{green}', '{day}', '{date}', '', '{orange}{yellow} {time} {yellow}{orange}', '{green}{yellow}{orange}{red}{violet}{blue}{green}{yellow}{orange}{red}{violet}{blue}{green}{yellow}{orange}{red}{violet}{blue}{green}{yellow}{orange}{red}'], duration: 30 },
+  { lines: ['{day}', '{date}', '', '{blue} {time} {blue}'], duration: 30 },
   { lines: ['{red}{orange}{yellow}{green}{blue}{violet}', '', 'GOOD MORNING', 'WYFF PACK', '', '{violet}{blue}{green}{yellow}{orange}{red}'] },
   { lines: ['GOD IS IN', 'THE DETAILS.', '', '- LUDWIG MIES'] },
   { lines: ['STAY HUNGRY', 'STAY FOOLISH', '', '- STEVE JOBS'] },
