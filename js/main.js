@@ -11,10 +11,11 @@ import { DEFAULT_DURATION } from './constants.js';
 //   ?feed=URL              load messages from another JSON file (default: messages.json)
 //   ?duration=20           seconds per message
 //   ?sound=0               start muted
+//   ?sound=classic         use FlipOff's recorded clip instead of per-flap clicks
 const params = new URLSearchParams(location.search);
 
 document.addEventListener('DOMContentLoaded', () => {
-  const soundEngine = new SoundEngine();
+  const soundEngine = new SoundEngine({ mode: params.get('sound') === 'classic' ? 'classic' : 'flaps' });
   if (params.get('sound') === '0') soundEngine.toggleMute();
 
   const board = new Board(document.getElementById('board-container'), soundEngine);

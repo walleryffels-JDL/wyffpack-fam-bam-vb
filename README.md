@@ -5,7 +5,7 @@ Our family quote board: a 6×22 Vestaboard-style split-flap display for the TV. 
 ![VestaFlip](screenshot.png)
 
 - 6 rows × 22 columns of portrait "bits" that fill a 16:9 screen
-- Each tile flips forward through its drum (A→B→C…), like the real mechanism
+- Each tile flips forward through its drum (A→B→C…), like the real mechanism, with a soft click for every flap
 - Vestaboard color tiles: `{red} {orange} {yellow} {green} {blue} {violet} {white} {black}`
 - Vestaboard character codes, so a 6×22 code grid from the Vestaboard/VBML API displays as-is
 - Live `{time}`, `{date}` and `{day}`
@@ -61,6 +61,7 @@ Edit `messages.json`. (The grid line in the example below is shortened.) You can
 | `feed` | `?feed=https://…/board.json` | Load messages from another JSON file (it must allow CORS) |
 | `duration` | `?duration=45` | Seconds per message |
 | `sound` | `?sound=0` | Start muted |
+| `sound` | `?sound=classic` | Play FlipOff's single recorded clip instead of a click per flap |
 
 ## Running locally
 

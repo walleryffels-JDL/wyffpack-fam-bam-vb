@@ -59,11 +59,14 @@ export class Board {
   _tick() {
     const now = performance.now();
     let active = false;
+    let flapped = 0;
     for (const row of this.tiles) {
       for (const tile of row) {
-        if (tile.step(now)) active = true;
+        if (tile.step(now)) flapped++;
+        if (tile.isFlipping) active = true;
       }
     }
+    if (this.soundEngine) this.soundEngine.playFlaps(flapped);
     if (!active) {
       clearInterval(this._timer);
       this._timer = null;

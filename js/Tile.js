@@ -34,14 +34,13 @@ export class Tile {
     return this.code !== this.target;
   }
 
-  /** Advance one flap forward on the drum. Returns true if still flipping. */
+  /** Advance one flap forward on the drum. Returns true if a flap fell. */
   step(now) {
-    if (!this.isFlipping) return false;
-    if (now < this.startAt) return true;
+    if (!this.isFlipping || now < this.startAt) return false;
 
     const i = DRUM.indexOf(this.code);
     this.render(DRUM[(i + 1) % DRUM.length]);
     this.el.classList.toggle('flap', this.isFlipping);
-    return this.isFlipping;
+    return true;
   }
 }
