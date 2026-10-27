@@ -1,0 +1,90 @@
+/* Board fills the whole screen — the TV is the frame */
+:root {
+  --cols: 22;
+  --rows: 6;
+  --gap: 0.45vmin;
+  --pad: 3vmin;
+  --tile-aspect: 0.62; /* width / height — Vestaboard bits are tall */
+
+  /* Largest tile that fits both directions */
+  --tile-w: min(
+    calc((100vw - 2 * var(--pad) - (var(--cols) - 1) * var(--gap)) / var(--cols)),
+    calc((100vh - 2 * var(--pad) - (var(--rows) - 1) * var(--gap)) / var(--rows) * var(--tile-aspect))
+  );
+  --tile-h: calc(var(--tile-w) / var(--tile-aspect));
+}
+
+body {
+  background: #000;
+  color: #fff;
+  overflow: hidden;
+  cursor: none;
+}
+
+.board-section {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.board {
+  background: #0B0B0B;
+  padding: var(--pad);
+}
+
+.tile-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), var(--tile-w));
+  grid-template-rows: repeat(var(--rows), var(--tile-h));
+  gap: var(--gap);
+}
+
+/* A single flap ("bit") */
+.tile {
+  position: relative;
+  background: #151515;
+  border-radius: calc(var(--tile-w) * 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: inset 0 calc(var(--tile-h) * -0.02) 0 rgba(0, 0, 0, 0.45);
+}
+
+.tile span {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  font-size: calc(var(--tile-h) * 0.52);
+  line-height: 1;
+  color: #F4F4F4;
+}
+
+/* Mechanical seam across the middle */
+.tile::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: max(1px, calc(var(--tile-h) * 0.012));
+  background: rgba(0, 0, 0, 0.7);
+}
+
+/* Top half darkens while the flap is falling */
+.tile::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.35));
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tile.flap::before {
+  opacity: 1;
+}
