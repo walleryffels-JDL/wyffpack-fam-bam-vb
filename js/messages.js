@@ -5,5 +5,5 @@ export const DEFAULT_MESSAGES = [
   { lines: ['{red}{orange}{yellow}{green}{blue}{violet}', '', 'GOOD MORNING', 'WYFF PACK', '', '{violet}{blue}{green}{yellow}{orange}{red}'] },
   { lines: ['GOD IS IN', 'THE DETAILS.', '', '- LUDWIG MIES'] },
   { lines: ['STAY HUNGRY', 'STAY FOOLISH', '', '- STEVE JOBS'] },
-  { lines: ['HAVE NO FEAR OF', 'PERFECTION', '', '- SALVADOR DALI'] }
+  { lines: ["I'M JUST GONNA", 'SEND IT!', '', '- LARRY ENTICER'] }
 ];
