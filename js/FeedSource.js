@@ -3,7 +3,8 @@ import { FEED_POLL_SECONDS } from './constants.js';
 /**
  * Polls a JSON file of messages. Accepts:
  *   [ message, ... ]                     a list of messages
- *   { "messages": [ ... ], "duration" }  same, with a default duration (seconds)
+ *   { "messages": [ ... ], "duration", "volume" }  same, with a default duration (seconds)
+ *                                                and flap volume (0 = silent, 1 = normal)
  *   [[...6x22 codes...]]                 a single Vestaboard-style grid
  */
 export class FeedSource {
@@ -28,6 +29,7 @@ export class FeedSource {
 
       let messages;
       let duration;
+      let volume;
       if (Array.isArray(data) && Array.isArray(data[0]) && typeof data[0][0] === 'number') {
         messages = [{ grid: data }];
       } else if (Array.isArray(data)) {
@@ -35,8 +37,9 @@ export class FeedSource {
       } else {
         messages = data.messages ?? [data];
         duration = data.duration;
+        volume = data.volume;
       }
-      if (messages.length) this.onMessages(messages, duration);
+      if (messages.length) this.onMessages(messages, { duration, volume });
       return true;
     } catch (e) {
       // Keep showing whatever we had; try again next poll

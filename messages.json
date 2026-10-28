@@ -1,5 +1,6 @@
 {
   "duration": 20,
+  "volume": 1,
   "messages": [
     { "lines": ["{day}", "{date}", "", "{blue} {time} {blue}"], "duration": 30 },
     { "lines": ["{red}{orange}{yellow}{green}{blue}{violet}", "", "GOOD MORNING", "WYFF PACK", "", "{violet}{blue}{green}{yellow}{orange}{red}"] },

@@ -12,13 +12,13 @@ import { DEFAULT_DURATION } from './constants.js';
 //   ?duration=20           seconds per message
 //   ?sound=0               start muted
 //   ?sound=classic         use FlipOff's recorded clip instead of per-flap clicks
-//   ?volume=0.5            flap volume (1 = normal)
+//   ?volume=0.5            flap volume (1 = normal); overrides "volume" in messages.json
 const params = new URLSearchParams(location.search);
 
 document.addEventListener('DOMContentLoaded', () => {
   const soundEngine = new SoundEngine({
     mode: params.get('sound') === 'classic' ? 'classic' : 'flaps',
-    volume: Number(params.get('volume') ?? 1) || 1
+    volume: params.has('volume') ? Number(params.get('volume')) || 0 : 1
   });
   if (params.get('sound') === '0') soundEngine.toggleMute();
 
@@ -49,8 +49,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Show built-ins right away, then switch to the feed once it loads
   rotator.setMessages(DEFAULT_MESSAGES);
-  const feed = new FeedSource(params.get('feed') || 'messages.json', (messages, duration) => {
+  const feed = new FeedSource(params.get('feed') || 'messages.json', (messages, { duration, volume }) => {
     if (duration && !params.get('duration')) rotator.duration = Number(duration);
+    if (volume !== undefined && !params.has('volume')) soundEngine.setVolume(volume);
     rotator.setMessages(messages);
   });
   feed.start();

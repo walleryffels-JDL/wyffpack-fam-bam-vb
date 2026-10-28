@@ -47,6 +47,7 @@ Edit `messages.json`. (The grid line in the example below is shortened.) You can
 ```
 
 - **duration** is how many seconds a message stays up. Set it per message or for the whole file.
+- **volume** sets how loud the flaps are for the whole board: `1` is normal, `0.5` is half, and `0` is silent. Try `1.5` or `2` to make it louder.
 - **lines** shows one line per row. A line longer than 22 characters wraps.
 - **text** wraps automatically. Use `\n` to force a new line.
 - **grid** takes raw Vestaboard character codes (0 is blank, 1–26 are A–Z, 63–70 are colors, and so on).

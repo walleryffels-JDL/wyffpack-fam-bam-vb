@@ -2,7 +2,7 @@ import { FLAP_AUDIO_BASE64 } from './flapAudio.js';
 import { STEP_INTERVAL } from './constants.js';
 
 const CLICK_VARIANTS = 12;      // pre-rendered clicks, picked at random so it never sounds looped
-const MAX_CLICKS_PER_STEP = 5;  // keep it a soft patter, not a buzz
+const MAX_CLICKS_PER_STEP = 3;  // keep it a soft patter, not a buzz
 
 export class SoundEngine {
   /** mode: 'flaps' (a click per flap, synthesized) or 'classic' (FlipOff's recorded clip) */
@@ -16,6 +16,13 @@ export class SoundEngine {
     this._currentSource = null;
     this._clicks = [];
     this._bus = null;
+    this._master = null;
+  }
+
+  /** 0 = silent, 1 = normal. Can be changed any time (e.g. from messages.json). */
+  setVolume(volume) {
+    this.volume = Math.max(0, Number(volume));
+    if (this._master) this._master.gain.value = 0.5 * this.volume;
   }
 
   async init() {
@@ -48,12 +55,12 @@ export class SoundEngine {
 
   /** Called every flap step with how many tiles just flipped. */
   playFlaps(count) {
-    if (this.mode !== 'flaps' || !count || !this.ctx || this.muted || !this._clicks.length) return;
+    if (this.mode !== 'flaps' || !count || !this.ctx || this.muted || !this.volume || !this._clicks.length) return;
     this.resume();
 
     // A few clicks per step, spread out, so many tiles blur into a soft patter
     const voices = Math.min(count, MAX_CLICKS_PER_STEP);
-    const level = Math.min(0.5, 0.12 * Math.pow(count, 0.35));
+    const level = Math.min(0.3, 0.06 * Math.pow(count, 0.3));
     const start = this.ctx.currentTime + 0.01;
     const spread = STEP_INTERVAL / 1000;
 
@@ -74,34 +81,34 @@ export class SoundEngine {
   // --- Flap voice -------------------------------------------------------
 
   /**
-   * A flap click is a soft, dull "tk": a short burst of muffled noise as the
-   * flap lets go and a quick wooden-sounding resonance as it lands. No sharp
-   * edges (every click fades in) and very little treble, so it stays gentle
-   * on TV speakers. Rendered once into small buffers so playback is cheap.
+   * A flap click is a soft, low "tup": a rounded knock with just a breath of
+   * muffled noise. Every click fades in over a couple of milliseconds and
+   * there's almost no treble, so nothing sharp reaches the TV speakers.
+   * Rendered once into small buffers so playback is cheap.
    */
   _buildFlapVoice() {
     const rate = this.ctx.sampleRate;
-    const length = Math.floor(rate * 0.03);
-    const attack = rate * 0.0008;
+    const length = Math.floor(rate * 0.035);
+    const attack = rate * 0.002;
 
     for (let v = 0; v < CLICK_VARIANTS; v++) {
       const buffer = this.ctx.createBuffer(1, length, rate);
       const data = buffer.getChannelData(0);
-      const bodyFreq = 550 + Math.random() * 450;
+      const bodyFreq = 260 + Math.random() * 180;
       let lp = 0;
 
       for (let i = 0; i < length; i++) {
         const t = i / rate;
         const fadeIn = i < attack ? 0.5 - 0.5 * Math.cos(Math.PI * i / attack) : 1;
 
-        // Muffled noise: one-pole low-pass takes the hiss off
-        lp += 0.18 * ((Math.random() * 2 - 1) - lp);
-        const brush = lp * Math.exp(-t / 0.003);
+        // A breath of heavily muffled noise for texture
+        lp += 0.05 * ((Math.random() * 2 - 1) - lp);
+        const brush = lp * Math.exp(-t / 0.004);
 
-        // Landing: damped mid resonance, like plastic tapping plastic
-        const body = Math.sin(2 * Math.PI * bodyFreq * t) * Math.exp(-t / 0.005);
+        // Rounded low knock as the flap lands
+        const body = Math.sin(2 * Math.PI * bodyFreq * t) * Math.exp(-t / 0.008);
 
-        data[i] = fadeIn * (brush * 0.9 + body * 0.5);
+        data[i] = fadeIn * (brush * 1.2 + body * 0.6);
       }
       this._clicks.push(buffer);
     }
@@ -109,19 +116,19 @@ export class SoundEngine {
     // Roll off what's left of the highs, then a gentle limiter
     const lowpass = this.ctx.createBiquadFilter();
     lowpass.type = 'lowpass';
-    lowpass.frequency.value = 2200;
+    lowpass.frequency.value = 1200;
     lowpass.Q.value = 0.5;
 
     const limiter = this.ctx.createDynamicsCompressor();
     limiter.threshold.value = -18;
     limiter.ratio.value = 6;
 
-    const master = this.ctx.createGain();
-    master.gain.value = 0.7 * this.volume;
+    this._master = this.ctx.createGain();
+    this.setVolume(this.volume);
 
     lowpass.connect(limiter);
-    limiter.connect(master);
-    master.connect(this.ctx.destination);
+    limiter.connect(this._master);
+    this._master.connect(this.ctx.destination);
     this._bus = lowpass;
   }
 
