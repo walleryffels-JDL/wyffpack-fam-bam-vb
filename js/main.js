@@ -12,10 +12,14 @@ import { DEFAULT_DURATION } from './constants.js';
 //   ?duration=20           seconds per message
 //   ?sound=0               start muted
 //   ?sound=classic         use FlipOff's recorded clip instead of per-flap clicks
+//   ?volume=0.5            flap volume (1 = normal)
 const params = new URLSearchParams(location.search);
 
 document.addEventListener('DOMContentLoaded', () => {
-  const soundEngine = new SoundEngine({ mode: params.get('sound') === 'classic' ? 'classic' : 'flaps' });
+  const soundEngine = new SoundEngine({
+    mode: params.get('sound') === 'classic' ? 'classic' : 'flaps',
+    volume: Number(params.get('volume') ?? 1) || 1
+  });
   if (params.get('sound') === '0') soundEngine.toggleMute();
 
   const board = new Board(document.getElementById('board-container'), soundEngine);

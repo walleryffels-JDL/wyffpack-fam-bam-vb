@@ -61,6 +61,7 @@ Edit `messages.json`. (The grid line in the example below is shortened.) You can
 | `feed` | `?feed=https://…/board.json` | Load messages from another JSON file (it must allow CORS) |
 | `duration` | `?duration=45` | Seconds per message |
 | `sound` | `?sound=0` | Start muted |
+| `volume` | `?volume=0.5` | Flap volume (1 is normal) |
 | `sound` | `?sound=classic` | Play FlipOff's single recorded clip instead of a click per flap |
 
 ## Running locally

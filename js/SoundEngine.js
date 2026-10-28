@@ -1,13 +1,14 @@
 import { FLAP_AUDIO_BASE64 } from './flapAudio.js';
 import { STEP_INTERVAL } from './constants.js';
 
-const CLICK_VARIANTS = 12;     // pre-rendered clicks, picked at random so it never sounds looped
-const MAX_CLICKS_PER_STEP = 14; // cap on voices per tick; loudness still scales with tile count
+const CLICK_VARIANTS = 12;      // pre-rendered clicks, picked at random so it never sounds looped
+const MAX_CLICKS_PER_STEP = 5;  // keep it a soft patter, not a buzz
 
 export class SoundEngine {
   /** mode: 'flaps' (a click per flap, synthesized) or 'classic' (FlipOff's recorded clip) */
-  constructor({ mode = 'flaps' } = {}) {
+  constructor({ mode = 'flaps', volume = 1 } = {}) {
     this.mode = mode;
+    this.volume = volume;
     this.ctx = null;
     this.muted = false;
     this._initialized = false;
@@ -50,9 +51,9 @@ export class SoundEngine {
     if (this.mode !== 'flaps' || !count || !this.ctx || this.muted || !this._clicks.length) return;
     this.resume();
 
-    // Spread the clicks across the step so many tiles blur into a clatter
+    // A few clicks per step, spread out, so many tiles blur into a soft patter
     const voices = Math.min(count, MAX_CLICKS_PER_STEP);
-    const level = Math.min(1, 0.5 * Math.sqrt(count) / voices);
+    const level = Math.min(0.5, 0.12 * Math.pow(count, 0.35));
     const start = this.ctx.currentTime + 0.01;
     const spread = STEP_INTERVAL / 1000;
 
@@ -62,7 +63,7 @@ export class SoundEngine {
       source.playbackRate.value = 0.92 + Math.random() * 0.16;
 
       const gain = this.ctx.createGain();
-      gain.gain.value = level * (0.7 + Math.random() * 0.3);
+      gain.gain.value = level * (0.5 + Math.random() * 0.5) / Math.sqrt(voices);
 
       source.connect(gain);
       gain.connect(this._bus);
@@ -73,62 +74,52 @@ export class SoundEngine {
   // --- Flap voice -------------------------------------------------------
 
   /**
-   * A flap click is two parts: a bright tick as the plastic flap releases,
-   * and a short low knock as it lands on the one below. Rendered once into
-   * small buffers so playback is cheap on a TV browser.
+   * A flap click is a soft, dull "tk": a short burst of muffled noise as the
+   * flap lets go and a quick wooden-sounding resonance as it lands. No sharp
+   * edges (every click fades in) and very little treble, so it stays gentle
+   * on TV speakers. Rendered once into small buffers so playback is cheap.
    */
   _buildFlapVoice() {
     const rate = this.ctx.sampleRate;
-    const length = Math.floor(rate * 0.045);
+    const length = Math.floor(rate * 0.03);
+    const attack = rate * 0.0008;
 
     for (let v = 0; v < CLICK_VARIANTS; v++) {
       const buffer = this.ctx.createBuffer(1, length, rate);
       const data = buffer.getChannelData(0);
-      const tickFreq = 1700 + Math.random() * 1400;
-      const knockFreq = 140 + Math.random() * 90;
-      const knockAt = 0.006 + Math.random() * 0.006; // landing comes a few ms after release
-      let hp = 0;
-      let prev = 0;
+      const bodyFreq = 550 + Math.random() * 450;
+      let lp = 0;
 
       for (let i = 0; i < length; i++) {
         const t = i / rate;
+        const fadeIn = i < attack ? 0.5 - 0.5 * Math.cos(Math.PI * i / attack) : 1;
 
-        // Release: high-passed noise with a fast decay plus a faint ring
-        const noise = Math.random() * 2 - 1;
-        hp = 0.85 * (hp + noise - prev);
-        prev = noise;
-        const tick = (hp * 0.9 + Math.sin(2 * Math.PI * tickFreq * t) * 0.25) * Math.exp(-t / 0.0025);
+        // Muffled noise: one-pole low-pass takes the hiss off
+        lp += 0.18 * ((Math.random() * 2 - 1) - lp);
+        const brush = lp * Math.exp(-t / 0.003);
 
-        // Landing: damped low thump with a little noise for texture
-        const k = t - knockAt;
-        const knock = k < 0 ? 0
-          : (Math.sin(2 * Math.PI * knockFreq * k) * 0.8 + noise * 0.25) * Math.exp(-k / 0.007);
+        // Landing: damped mid resonance, like plastic tapping plastic
+        const body = Math.sin(2 * Math.PI * bodyFreq * t) * Math.exp(-t / 0.005);
 
-        data[i] = tick * 0.55 + knock * 0.6;
+        data[i] = fadeIn * (brush * 0.9 + body * 0.5);
       }
       this._clicks.push(buffer);
     }
 
-    // Soft, muffled character (flaps behind a front panel), then a limiter
+    // Roll off what's left of the highs, then a gentle limiter
     const lowpass = this.ctx.createBiquadFilter();
     lowpass.type = 'lowpass';
-    lowpass.frequency.value = 4200;
+    lowpass.frequency.value = 2200;
     lowpass.Q.value = 0.5;
 
-    const body = this.ctx.createBiquadFilter();
-    body.type = 'peaking';
-    body.frequency.value = 900;
-    body.gain.value = 3;
-
     const limiter = this.ctx.createDynamicsCompressor();
-    limiter.threshold.value = -10;
-    limiter.ratio.value = 8;
+    limiter.threshold.value = -18;
+    limiter.ratio.value = 6;
 
     const master = this.ctx.createGain();
-    master.gain.value = 0.9;
+    master.gain.value = 0.7 * this.volume;
 
-    lowpass.connect(body);
-    body.connect(limiter);
+    lowpass.connect(limiter);
     limiter.connect(master);
     master.connect(this.ctx.destination);
     this._bus = lowpass;
