@@ -16,7 +16,7 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 // Globe bulbs in chase order: along the rail from the far end toward the
 // arrow, then the back of the arrowhead, then the tip.
 const BULBS = [
-  [835, 112, 'rail'], [675, 112, 'rail'], [515, 112, 'rail'], [355, 112, 'rail'], [200, 112, 'rail'],
+  [835, 87, 'rail'], [675, 87, 'rail'], [515, 87, 'rail'], [355, 87, 'rail'], [200, 87, 'rail'],
   [84, 52, 'head'], [84, 212, 'head'], [10, 132, 'head']
 ];
 

@@ -38,9 +38,9 @@ body {
   position: relative;
   z-index: 1;
   /* Scaled down a little so the whole sign fits with some sky around it */
-  --u: calc(var(--base) * 0.95);
+  --u: calc(var(--base) * 0.93);
   width: calc(92 * var(--u));
-  height: calc(47.3 * var(--u));
+  height: calc(49.8 * var(--u));
 }
 
 .topper {
@@ -99,7 +99,7 @@ body {
 
 .panel {
   position: absolute;
-  top: calc(15 * var(--u));
+  top: calc(17.5 * var(--u));
   left: calc(12.4 * var(--u));
   width: calc(79.6 * var(--u));
   padding: calc(0.9 * var(--u));
