@@ -82,30 +82,31 @@ function smoothPath(points) {
 }
 
 /**
- * Snow lying on the rail: an uneven drift on top that rounds off at the ends,
- * and a ragged lip hanging a little over the front edge.
+ * Snow lying on the rail: an uneven drift on top with a ragged lip hanging a
+ * little over the front edge. At the arrowhead end it banks up against the
+ * arrowhead, where snow sliding off its top has piled up; the far end rounds off.
  */
 function buildSnowPile() {
   const rand = seeded(42);
   const RAIL_TOP = 90;
-  const LEFT = 116;
+  const WALL = 121;  // just against the back of the arrowhead
   const RIGHT = 922;
   const top = [];
   const lip = [];
 
-  // Closer points near the ends so the pile can curve down smoothly there
-  const xs = [LEFT, LEFT + 8, LEFT + 20, LEFT + 36];
-  for (let x = LEFT + 70; x < RIGHT - 50; x += 46) xs.push(x);
+  // Closer points at both ends so the pile can curve smoothly there
+  const xs = [WALL, WALL + 6, WALL + 16, WALL + 30, WALL + 48, WALL + 70];
+  for (let x = WALL + 100; x < RIGHT - 50; x += 46) xs.push(x);
   xs.push(RIGHT - 36, RIGHT - 20, RIGHT - 8, RIGHT);
 
   for (const x of xs) {
-    const t = (x - LEFT) / (RIGHT - LEFT);
-    const fromEnd = Math.min(x - LEFT, RIGHT - x);
-    const endFade = Math.sin(Math.min(1, fromEnd / 55) * Math.PI / 2);   // rounds off at the ends
-    const swell = 0.8 + 0.2 * Math.sin(t * Math.PI * 2.6 + 0.8);         // long, gentle drifts
-    const depth = (24 + rand() * 7) * swell * endFade + 1;
+    const t = (x - WALL) / (RIGHT - WALL);
+    const farFade = Math.sin(Math.min(1, (RIGHT - x) / 55) * Math.PI / 2); // rounds off at the far end
+    const swell = 0.8 + 0.2 * Math.sin(t * Math.PI * 2.6 + 0.8);           // long, gentle drifts
+    const bank = 30 * Math.exp(-(x - WALL) / 38);                          // drift against the arrowhead
+    const depth = ((24 + rand() * 7) * swell + bank) * farFade + 1;
     top.push([x, RAIL_TOP - depth]);
-    lip.push([x, RAIL_TOP + 4 + rand() * 5 * endFade]);
+    lip.push([x, RAIL_TOP + 4 + rand() * 5 * farFade + bank * 0.12]);
   }
 
   const topPath = smoothPath(top);
