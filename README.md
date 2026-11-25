@@ -14,7 +14,7 @@ Our family quote board: a 6×22 Vestaboard-style split-flap display for the TV. 
 
 ## Setting it up on a Samsung TV (Tizen, e.g. the U7900F)
 
-1. **Host it.** The easiest way is GitHub Pages. Push this repo to GitHub, then go to **Settings → Pages → Deploy from branch → `main` / root**. You'll get a URL like `https://walleryffels-jdl.github.io/wyffpack-fam-bam-vb/`.
+1. **Host it.** The easiest way is GitHub Pages. Push this repo to GitHub, then go to **Settings → Pages → Deploy from branch → `main` / root**. You'll get a URL like `https://walleryffels-jdl.github.io/wyffpack-fam-bam-vb/`. That address opens a menu where you pick the **Flip Board** (`board.html`) or the **Arrow Sign** (`sign/`) with the remote. Press Back to return to the menu.
 2. **Open it on the TV.** Open the **Internet** app, go to the URL, and bookmark it.
 3. **Go full screen.** Use the browser's own full-screen option in its menu, or press **F** on a keyboard.
 4. **Turn on sound (optional).** Press **OK/Enter** on the remote once. Browsers only allow sound after you interact with the page.
@@ -75,6 +75,8 @@ Edit `sign/messages.json`:
 
 ## URL options
 
+These go on the board's address, for example `board.html?volume=0.5`.
+
 | Option | Example | What it does |
 | --- | --- | --- |
 | `msg` | `?msg=HELLO&msg=WORLD` | Show these messages instead of `messages.json` |
@@ -91,7 +93,7 @@ python3 -m http.server 8080
 # open http://localhost:8080
 ```
 
-If you open `index.html` straight from disk, `messages.json` can't load, so the built-in messages in `js/messages.js` are shown instead.
+If you open `board.html` straight from disk, `messages.json` can't load, so the built-in messages in `js/messages.js` are shown instead.
 
 ## License
 

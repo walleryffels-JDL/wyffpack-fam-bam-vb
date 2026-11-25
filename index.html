@@ -3,13 +3,228 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#000000">
-  <title>VestaFlip</title>
+  <meta name="theme-color" content="#07090f">
+  <title>Wyffpack Displays</title>
   <link rel="stylesheet" href="css/reset.css">
-  <link rel="stylesheet" href="css/board.css">
+  <style>
+    :root {
+      --u: min(1vw, calc(100vh / 56.25));
+      --bg: #07090f;
+      --card: #11151F;
+      --card-edge: #232938;
+      --text: #F4F1E8;
+      --muted: #8A90A0;
+      --focus: #F6C42B;
+    }
+
+    body {
+      background: radial-gradient(ellipse 80% 70% at 50% 40%, #121829, var(--bg));
+      color: var(--text);
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: calc(4 * var(--u));
+      padding: 16px;
+    }
+
+    h1 {
+      font-size: max(22px, calc(3.4 * var(--u)));
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-align: center;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: max(14px, calc(1.4 * var(--u)));
+      text-align: center;
+    }
+
+    .choices {
+      display: flex;
+      gap: calc(4 * var(--u));
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .choice {
+      width: min(100%, calc(38 * var(--u)), 520px);
+      min-width: 240px;
+      background: var(--card);
+      border: calc(0.3 * var(--u)) solid var(--card-edge);
+      border-radius: calc(1.6 * var(--u));
+      padding: calc(2.4 * var(--u));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: calc(2 * var(--u));
+      color: var(--text);
+      text-align: center;
+      transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .choice:focus,
+    .choice:hover {
+      outline: none;
+      border-color: var(--focus);
+      transform: scale(1.04);
+      box-shadow: 0 0 calc(4 * var(--u)) rgba(246, 196, 43, 0.35);
+    }
+
+    .choice-name {
+      font-size: max(20px, calc(2.6 * var(--u)));
+      font-weight: 800;
+    }
+
+    .choice-desc {
+      color: var(--muted);
+      font-size: max(13px, calc(1.3 * var(--u)));
+      line-height: 1.4;
+    }
+
+    /* Mini split-flap preview */
+    .preview {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: calc(0.8 * var(--u));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .preview-board {
+      background: #0B0B0B;
+      display: grid;
+      grid-template-columns: repeat(11, 1fr);
+      grid-template-rows: repeat(5, 1fr);
+      gap: 3%;
+      padding: 6%;
+      align-items: stretch;
+      justify-items: stretch;
+    }
+
+    .preview-board span {
+      background: #1A1A1A;
+      border-radius: 6%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: max(10px, calc(1.3 * var(--u)));
+      color: #F4F4F4;
+      position: relative;
+    }
+
+    .preview-board span::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 1px;
+      background: rgba(0, 0, 0, 0.7);
+    }
+
+    .preview-sign {
+      background: linear-gradient(180deg, #070B17, #0B1222);
+      flex-direction: column;
+      gap: 6%;
+      padding: 6% 8%;
+    }
+
+    .preview-sign svg {
+      width: 62%;
+      height: auto;
+    }
+
+    .preview-panel {
+      width: 100%;
+      flex: 1;
+      background: #FBF7EA;
+      border: calc(0.6 * var(--u)) solid #2B2E33;
+      border-radius: 4%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: Impact, 'Arial Narrow', sans-serif;
+      font-size: max(11px, calc(1.6 * var(--u)));
+      letter-spacing: 0.18em;
+      white-space: nowrap;
+      color: #141414;
+      box-shadow: 0 0 calc(2 * var(--u)) rgba(255, 244, 210, 0.25);
+    }
+
+    .preview-panel .red { color: #C8102E; }
+  </style>
 </head>
 <body>
-  <main class="board-section" id="board-container"></main>
-  <script type="module" src="js/main.js"></script>
+  <h1>WYFF PACK</h1>
+
+  <div class="choices">
+    <a class="choice" id="choose-board" href="board.html">
+      <div class="preview preview-board" id="mini-board" aria-hidden="true"></div>
+      <div class="choice-name">Flip Board</div>
+      <div class="choice-desc">The Vestaboard-style split-flap board, cycling through the family messages</div>
+    </a>
+
+    <a class="choice" id="choose-sign" href="sign/">
+      <div class="preview preview-sign" aria-hidden="true">
+        <svg viewBox="0 0 1000 260">
+          <polygon points="20,70 800,70 800,10 980,130 800,250 800,190 20,190"
+            fill="#F6C42B" stroke="#9C6C08" stroke-width="10" stroke-linejoin="round"/>
+          <g fill="#FFF6D0">
+            <circle cx="80" cy="100" r="12"/><circle cx="200" cy="100" r="12"/><circle cx="320" cy="100" r="12"/>
+            <circle cx="440" cy="100" r="12"/><circle cx="560" cy="100" r="12"/><circle cx="680" cy="100" r="12"/>
+            <circle cx="80" cy="160" r="12"/><circle cx="200" cy="160" r="12"/><circle cx="320" cy="160" r="12"/>
+            <circle cx="440" cy="160" r="12"/><circle cx="560" cy="160" r="12"/><circle cx="680" cy="160" r="12"/>
+            <circle cx="860" cy="80" r="12"/><circle cx="860" cy="180" r="12"/><circle cx="930" cy="130" r="12"/>
+          </g>
+        </svg>
+        <div class="preview-panel"><div>WELCOME HOME</div><div class="red">WYFF PACK</div></div>
+      </div>
+      <div class="choice-name">Arrow Sign</div>
+      <div class="choice-desc">The roadside sign with the lit arrow, showing one message with slide-in letters</div>
+    </a>
+  </div>
+
+  <p class="hint">Use the arrows on the remote to pick, then press OK. Press Back to return here.</p>
+
+  <script>
+    // Mini board preview
+    const word = ['', '  GOOD', ' MORNING', '', ''];
+    const mini = document.getElementById('mini-board');
+    for (let r = 0; r < 5; r++) {
+      for (let c = 0; c < 11; c++) {
+        const s = document.createElement('span');
+        s.textContent = (word[r][c] || '').trim();
+        if ((r === 0 || r === 4) && c >= 3 && c <= 7) {
+          s.style.background = ['#DA291C', '#FF7500', '#FFB81C', '#009A44', '#0084D5'][c - 3];
+        }
+        mini.appendChild(s);
+      }
+    }
+
+    // TV remote: left/right moves between the two choices, OK opens one
+    const choices = [...document.querySelectorAll('.choice')];
+    choices[0].focus();
+    document.addEventListener('keydown', (e) => {
+      const i = choices.indexOf(document.activeElement);
+      if (['ArrowRight', 'ArrowDown'].includes(e.key)) {
+        e.preventDefault();
+        choices[(i + 1) % choices.length].focus();
+      } else if (['ArrowLeft', 'ArrowUp'].includes(e.key)) {
+        e.preventDefault();
+        choices[(i - 1 + choices.length) % choices.length].focus();
+      } else if (e.key === 'Enter' && i === -1) {
+        choices[0].focus();
+      }
+    });
+  </script>
 </body>
 </html>
