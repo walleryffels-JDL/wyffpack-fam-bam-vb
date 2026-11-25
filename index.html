@@ -37,6 +37,12 @@
       text-align: center;
     }
 
+    #countdown {
+      color: var(--focus);
+      font-weight: 700;
+      font-size: max(16px, calc(1.8 * var(--u)));
+    }
+
     .hint {
       color: var(--muted);
       font-size: max(14px, calc(1.4 * var(--u)));
@@ -193,6 +199,7 @@
     </a>
   </div>
 
+  <p class="hint" id="countdown" hidden></p>
   <p class="hint">Use the arrows on the remote to pick, then press OK. Press Back to return here.</p>
 
   <script>
@@ -212,8 +219,58 @@
 
     // TV remote: left/right moves between the two choices, OK opens one
     const choices = [...document.querySelectorAll('.choice')];
-    choices[0].focus();
+
+    // Remember the last display picked, and open it again by itself after a
+    // few seconds when the TV comes back on. Pressing anything cancels that.
+    const AUTO_OPEN_SECONDS = 5;
+    const countdownEl = document.getElementById('countdown');
+    let countdownTimer = null;
+
+    function getLastChoice() {
+      try { return localStorage.getItem('lastDisplay'); } catch (e) { return null; }
+    }
+
+    choices.forEach(choice => choice.addEventListener('click', () => {
+      try { localStorage.setItem('lastDisplay', choice.id); } catch (e) { /* not saved; that's fine */ }
+    }));
+
+    function cancelCountdown() {
+      clearInterval(countdownTimer);
+      countdownTimer = null;
+      countdownEl.hidden = true;
+    }
+
+    function startCountdown(choice) {
+      const name = choice.querySelector('.choice-name').textContent;
+      let left = AUTO_OPEN_SECONDS;
+      const tick = () => {
+        if (left <= 0) {
+          cancelCountdown();
+          choice.click();
+          return;
+        }
+        countdownEl.textContent = `Opening ${name} in ${left}… press any button to stay here`;
+        left--;
+      };
+      countdownEl.hidden = false;
+      tick();
+      countdownTimer = setInterval(tick, 1000);
+    }
+
+    const last = choices.find(c => c.id === getLastChoice());
+    (last || choices[0]).focus();
+
+    // Only on a fresh load (TV turned on, page opened), not when coming back with Back
+    const nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+    if (last && (!nav || nav.type !== 'back_forward')) startCountdown(last);
+    window.addEventListener('pageshow', (e) => { if (e.persisted) cancelCountdown(); });
+    document.addEventListener('pointerdown', cancelCountdown);
+
     document.addEventListener('keydown', (e) => {
+      if (countdownTimer && e.key !== 'Enter') {
+        cancelCountdown();
+      }
+
       const i = choices.indexOf(document.activeElement);
       if (['ArrowRight', 'ArrowDown'].includes(e.key)) {
         e.preventDefault();

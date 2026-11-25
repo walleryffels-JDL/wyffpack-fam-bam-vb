@@ -14,7 +14,7 @@ Our family quote board: a 6×22 Vestaboard-style split-flap display for the TV. 
 
 ## Setting it up on a Samsung TV (Tizen, e.g. the U7900F)
 
-1. **Host it.** The easiest way is GitHub Pages. Push this repo to GitHub, then go to **Settings → Pages → Deploy from branch → `main` / root**. You'll get a URL like `https://walleryffels-jdl.github.io/wyffpack-fam-bam-vb/`. That address opens a menu where you pick the **Flip Board** (`board.html`) or the **Arrow Sign** (`sign/`) with the remote. Press Back to return to the menu.
+1. **Host it.** The easiest way is GitHub Pages. Push this repo to GitHub, then go to **Settings → Pages → Deploy from branch → `main` / root**. You'll get a URL like `https://walleryffels-jdl.github.io/wyffpack-fam-bam-vb/`. That address opens a menu where you pick the **Flip Board** (`board.html`) or the **Arrow Sign** (`sign/`) with the remote. Press Back to return to the menu. The menu remembers your last pick and opens it by itself after 5 seconds when the page is freshly opened; press any button to stay on the menu.
 2. **Open it on the TV.** Open the **Internet** app, go to the URL, and bookmark it.
 3. **Go full screen.** Use the browser's own full-screen option in its menu, or press **F** on a keyboard.
 4. **Turn on sound (optional).** Press **OK/Enter** on the remote once. Browsers only allow sound after you interact with the page.
