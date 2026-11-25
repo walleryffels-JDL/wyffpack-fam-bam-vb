@@ -54,6 +54,25 @@ Edit `messages.json`. (The grid line in the example below is shortened.) You can
 - `{63}` through `{70}` and the other numeric codes also work inline, the same as in VBML.
 - Supported characters are `A–Z 0–9 ! @ # $ ( ) - + & = ; : ' " % , . / ? °`. Anything else shows as a blank tile.
 
+## The sign page
+
+There's a second page at **`/sign/`** (https://walleryffels-jdl.github.io/wyffpack-fam-bam-vb/sign/). It looks like a roadside trailer sign, with a lit arrow on top and black slide-in letters below. It shows one message and keeps it up until you change it. When you do, the old letters come off and the new ones slide in.
+
+Edit `sign/messages.json`:
+
+```json
+{
+  "arrow": "right",
+  "lights": "chase",
+  "message": { "lines": ["WELCOME HOME", "{red}WYFF PACK"] }
+}
+```
+
+- **message** is plain text, which wraps and centers automatically, or `{ "lines": [...] }` for one line per row. The panel holds 4 rows of 20 letters.
+- `{red}` switches the letters that follow to red, and `{black}` switches back.
+- **arrow** is `right` or `left`.
+- **lights** is `chase` (running toward the tip), `blink`, `on` or `off`.
+
 ## URL options
 
 | Option | Example | What it does |

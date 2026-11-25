@@ -1,0 +1,257 @@
+// A roadside marquee sign: a lit arrow on top and slide-in letters below.
+// What it says comes from sign/messages.json, which is re-checked every minute.
+
+const COLS = 20;
+const ROWS = 4;
+const POLL_SECONDS = 60;
+
+const tracksEl = document.getElementById('tracks');
+const arrowEl = document.getElementById('arrow');
+const bulbsEl = document.getElementById('bulbs');
+
+// --- Arrow bulbs ----------------------------------------------------------
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const BULB_SPACING = 30;
+
+// Bulbs run from the tail toward the tip along the top and bottom edges, then
+// along the two sides of the arrowhead, so the chase meets at the point.
+const RUNS = [
+  [[[45, 95], [785, 95]], [[830, 52], [940, 125]]],
+  [[[45, 165], [785, 165]], [[830, 208], [940, 135]]],
+  [[[45, 130], [45, 131]]]
+];
+
+function pointsAlong(path, spacing) {
+  const points = [];
+  let carry = 0;
+  for (let i = 0; i < path.length - 1; i++) {
+    const [x1, y1] = path[i];
+    const [x2, y2] = path[i + 1];
+    const len = Math.hypot(x2 - x1, y2 - y1);
+    for (let d = carry; d <= len; d += spacing) {
+      points.push([x1 + (x2 - x1) * d / len, y1 + (y2 - y1) * d / len]);
+    }
+    carry = spacing - ((len - carry) % spacing);
+  }
+  return points;
+}
+
+function buildBulbs() {
+  RUNS.forEach((pieces) => {
+    const points = pieces.flatMap(piece => pointsAlong(piece, BULB_SPACING));
+    points.forEach(([x, y], i) => {
+      const g = document.createElementNS(SVG_NS, 'g');
+      g.setAttribute('class', `bulb phase-${i % 3} ${i % 2 ? 'odd' : 'even'}`);
+      g.innerHTML = `<circle class="bulb-halo" cx="${x}" cy="${y}" r="26"/>`
+        + `<circle class="bulb-glass" cx="${x}" cy="${y}" r="8"/>`;
+      bulbsEl.appendChild(g);
+    });
+  });
+}
+
+function setLights(mode = 'chase') {
+  const modes = ['chase', 'blink', 'on', 'off'];
+  arrowEl.classList.remove(...modes.map(m => `lights-${m}`));
+  arrowEl.classList.add(`lights-${modes.includes(mode) ? mode : 'chase'}`);
+}
+
+function setArrowDirection(direction = 'right') {
+  arrowEl.classList.toggle('left', direction === 'left');
+}
+
+// --- Letters ---------------------------------------------------------------
+
+const slots = [];
+
+// Small, fixed wobble per slot so the letters look hand-placed
+function wobble(r, c) {
+  const n = Math.sin(r * 127.1 + c * 311.7) * 43758.5453;
+  const f = n - Math.floor(n);
+  const g = (Math.sin(r * 269.5 + c * 183.3) * 43758.5453) % 1;
+  return { tilt: (f - 0.5) * 2, nudge: g * 0.03 };
+}
+
+function buildTracks() {
+  for (let r = 0; r < ROWS; r++) {
+    const line = document.createElement('div');
+    line.className = 'track-line';
+    line.style.top = `calc(${(r + 1) / ROWS * 100}% - ${0.9 * (1 - (r + 1) / ROWS)} * var(--u) - 0.1 * var(--u))`;
+    tracksEl.appendChild(line);
+  }
+  for (let r = 0; r < ROWS; r++) {
+    const row = [];
+    for (let c = 0; c < COLS; c++) {
+      const slot = document.createElement('div');
+      slot.className = 'slot';
+      const letter = document.createElement('span');
+      letter.className = 'letter';
+      const { tilt, nudge } = wobble(r, c);
+      letter.style.setProperty('--tilt', `${tilt.toFixed(2)}deg`);
+      letter.style.setProperty('--nudge', `${nudge.toFixed(2)}em`);
+      slot.appendChild(letter);
+      tracksEl.appendChild(slot);
+      row.push({ el: letter, ch: ' ', red: false });
+    }
+    slots.push(row);
+  }
+}
+
+/** Turn a line into [{ ch, red }]; {red} and {black} switch letter color. */
+function lineToCells(line, state) {
+  const cells = [];
+  const re = /\{(red|black)\}|([\s\S])/gi;
+  let m;
+  while ((m = re.exec(line))) {
+    if (m[1]) state.red = m[1].toLowerCase() === 'red';
+    else cells.push({ ch: m[2].toUpperCase(), red: state.red });
+  }
+  return cells;
+}
+
+function wrap(cells) {
+  const words = [];
+  let word = [];
+  for (const cell of cells) {
+    if (cell.ch === ' ') {
+      if (word.length) words.push(word);
+      word = [];
+    } else {
+      word.push(cell);
+    }
+  }
+  if (word.length) words.push(word);
+
+  // Keep a dash with the word after it, so "- DAD" never splits
+  for (let i = words.length - 2; i >= 0; i--) {
+    if (words[i].length === 1 && words[i][0].ch === '-') {
+      words.splice(i, 2, [...words[i], { ch: ' ', red: false }, ...words[i + 1]]);
+    }
+  }
+
+  const rows = [];
+  let row = [];
+  for (let w of words) {
+    while (w.length > COLS) {
+      if (row.length) { rows.push(row); row = []; }
+      rows.push(w.slice(0, COLS));
+      w = w.slice(COLS);
+    }
+    if (row.length && row.length + 1 + w.length > COLS) {
+      rows.push(row);
+      row = [];
+    }
+    row = row.length ? [...row, { ch: ' ', red: false }, ...w] : [...w];
+  }
+  if (row.length || !rows.length) rows.push(row);
+  return rows;
+}
+
+/** message: "text" | ["line", ...] | { text } | { lines: [...] } */
+function messageToGrid(message) {
+  const msg = typeof message === 'object' && !Array.isArray(message) ? message : { text: message };
+  const lines = Array.isArray(msg.lines) ? msg.lines
+    : Array.isArray(msg.text) ? msg.text
+    : String(msg.text ?? '').split('\n');
+
+  const state = { red: false };
+  let rows = lines.flatMap(line => wrap(lineToCells(String(line), state)));
+  while (rows.length && !rows[0].length) rows.shift();
+  while (rows.length && !rows[rows.length - 1].length) rows.pop();
+  rows = rows.slice(0, ROWS);
+
+  const grid = Array.from({ length: ROWS }, () =>
+    Array.from({ length: COLS }, () => ({ ch: ' ', red: false })));
+  const top = Math.floor((ROWS - rows.length) / 2);
+  rows.forEach((row, i) => {
+    const left = Math.floor((COLS - row.length) / 2);
+    row.forEach((cell, j) => { grid[top + i][left + j] = cell; });
+  });
+  return grid;
+}
+
+/** Pull the old letters off, then slide the new ones in, left to right. */
+function showGrid(grid, animate = true) {
+  let changedIndex = 0;
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const slot = slots[r][c];
+      const next = grid[r][c];
+      if (slot.ch === next.ch && slot.red === next.red) continue;
+
+      slot.ch = next.ch;
+      slot.red = next.red;
+      const el = slot.el;
+
+      if (!animate) {
+        el.textContent = next.ch === ' ' ? '' : next.ch;
+        el.classList.toggle('red', next.red);
+        continue;
+      }
+
+      const outDelay = (r * 60 + c * 18);
+      const inDelay = 900 + changedIndex * 55;
+      changedIndex++;
+
+      setTimeout(() => el.classList.add('out'), outDelay);
+      setTimeout(() => {
+        el.textContent = next.ch === ' ' ? '' : next.ch;
+        el.classList.toggle('red', next.red);
+        el.classList.remove('out');
+        el.classList.add('enter');
+        el.getBoundingClientRect(); // start the slide from the 'enter' position
+        el.classList.remove('enter');
+      }, Math.max(inDelay, outDelay + 450));
+    }
+  }
+}
+
+// --- Loading messages.json -----------------------------------------------
+
+let lastJson = null;
+let firstShow = true;
+
+async function load() {
+  try {
+    const res = await fetch(`messages.json?t=${Date.now()}`, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    if (text === lastJson) return;
+    lastJson = text;
+
+    const data = JSON.parse(text);
+    setLights(data.lights);
+    setArrowDirection(data.arrow);
+    showGrid(messageToGrid(data.message ?? ''), !firstShow);
+    firstShow = false;
+  } catch (e) {
+    // Keep showing what we have; try again on the next poll
+    console.warn('Could not load sign messages:', e);
+  }
+}
+
+buildBulbs();
+buildTracks();
+setLights('chase');
+
+// Wait for the sign font so the first message doesn't jump when it loads
+(document.fonts ? document.fonts.ready : Promise.resolve()).then(() => {
+  load();
+  setInterval(load, POLL_SECONDS * 1000);
+});
+
+// Ask the browser not to dim/sleep the screen (ignored where unsupported)
+if ('wakeLock' in navigator) {
+  const request = () => navigator.wakeLock.request('screen').catch(() => {});
+  request();
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') request();
+  });
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'f' || e.key === 'F') {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen().catch(() => {});
+  }
+});

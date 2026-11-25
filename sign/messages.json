@@ -1,0 +1,7 @@
+{
+  "arrow": "right",
+  "lights": "chase",
+  "message": {
+    "lines": ["WELCOME HOME", "{red}WYFF PACK"]
+  }
+}

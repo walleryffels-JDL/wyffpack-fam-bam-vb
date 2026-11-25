@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#05070d">
+  <title>Wyffpack Sign</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&display=block">
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="sign.css">
+</head>
+<body>
+  <main class="scene">
+    <div class="sign">
+      <div class="arrow-mount">
+        <svg class="arrow" id="arrow" viewBox="0 0 1000 260" aria-hidden="true">
+          <defs>
+            <radialGradient id="halo">
+              <stop offset="0" stop-color="#FFF4C2" stop-opacity="0.95"/>
+              <stop offset="0.35" stop-color="#FFD25A" stop-opacity="0.55"/>
+              <stop offset="1" stop-color="#FFB000" stop-opacity="0"/>
+            </radialGradient>
+            <linearGradient id="arrow-fill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#F6C42B"/>
+              <stop offset="1" stop-color="#E0A419"/>
+            </linearGradient>
+          </defs>
+          <polygon class="arrow-body"
+            points="20,70 800,70 800,10 980,130 800,250 800,190 20,190" />
+          <g id="bulbs"></g>
+        </svg>
+        <div class="bracket bracket-left"></div>
+        <div class="bracket bracket-right"></div>
+      </div>
+
+      <div class="panel">
+        <div class="tracks" id="tracks"></div>
+      </div>
+
+      <div class="base">
+        <div class="post post-left"></div>
+        <div class="post post-right"></div>
+        <div class="trailer"></div>
+        <div class="wheel wheel-left"></div>
+        <div class="wheel wheel-right"></div>
+        <div class="hitch"></div>
+      </div>
+    </div>
+    <div class="ground"></div>
+  </main>
+  <script type="module" src="sign.js"></script>
+</body>
+</html>
