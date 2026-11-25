@@ -103,7 +103,7 @@ function buildSnowPile() {
     const t = (x - WALL) / (RIGHT - WALL);
     const farFade = Math.sin(Math.min(1, (RIGHT - x) / 55) * Math.PI / 2); // rounds off at the far end
     const swell = 0.8 + 0.2 * Math.sin(t * Math.PI * 2.6 + 0.8);           // long, gentle drifts
-    const bank = 30 * Math.exp(-(x - WALL) / 38);                          // drift against the arrowhead
+    const bank = 20 * Math.exp(-(x - WALL) / 32);                          // drift against the arrowhead
     const depth = ((24 + rand() * 7) * swell + bank) * farFade + 1;
     top.push([x, RAIL_TOP - depth]);
     lip.push([x, RAIL_TOP + 4 + rand() * 5 * farFade + bank * 0.12]);
