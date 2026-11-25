@@ -110,13 +110,43 @@ function buildSnowPile() {
 
   const topPath = smoothPath(top);
   const lipPath = smoothPath(lip.reverse()).replace(/^M/, 'L');
-  const d = `${topPath} ${lipPath} Z`;
+  const d = `${topPath} ${lipPath} Z ${arrowheadSnow(rand)}`;
 
   document.getElementById('snow-body').setAttribute('d', d);
   document.getElementById('snow-texture').setAttribute('d', d);
   const shadow = document.getElementById('snow-shadow');
   shadow.setAttribute('d', d);
   shadow.setAttribute('transform', 'translate(0 5)');
+}
+
+/**
+ * Snow on the arrowhead: piled on its top corner and thinning out down the
+ * sloping top edge, stopping before the tip (snow slides off steep parts).
+ */
+function arrowheadSnow(rand) {
+  const CORNER = [124, -14];
+  const TIP = [-44, 132];
+  const along = t => [CORNER[0] + (TIP[0] - CORNER[0]) * t, CORNER[1] + (TIP[1] - CORNER[1]) * t];
+  const END = 0.6;
+  // A rounded mound sitting on the corner, spilling a little over the back edge
+  const top = [[133, CORNER[1] + 6], [133, CORNER[1] - 8], [126, CORNER[1] - 19], [114, CORNER[1] - 22]];
+  const lip = [[133, CORNER[1] + 6]];
+
+  for (let i = 1; i <= 8; i++) {
+    const t = 0.05 + (END - 0.05) * i / 8;
+    const [x, y] = along(t);
+    const fade = 1 - (t - 0.05) / (END - 0.05);
+    const depth = (5 + 15 * Math.pow(fade, 0.9)) * (0.9 + rand() * 0.2) * Math.min(1, fade * 4);
+    top.push([x, y - depth]);
+  }
+  for (let i = 8; i >= 0; i--) {
+    const t = (END * i) / 8;
+    const [x, y] = along(t);
+    lip.push([x, y + 3 + rand() * 2 * (1 - t / END)]);
+  }
+
+  const lipPath = smoothPath(lip.slice(1)).replace(/^M/, 'L');
+  return `${smoothPath(top)} ${lipPath} Z`;
 }
 
 /** A soft, round snowflake image, drawn once and reused for every flake. */
