@@ -6,58 +6,43 @@ const ROWS = 4;
 const POLL_SECONDS = 60;
 
 const tracksEl = document.getElementById('tracks');
-const arrowEl = document.getElementById('arrow');
+const signEl = document.getElementById('sign');
 const bulbsEl = document.getElementById('bulbs');
 
 // --- Arrow bulbs ----------------------------------------------------------
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
-const BULB_SPACING = 30;
 
-// Bulbs run from the tail toward the tip along the top and bottom edges, then
-// along the two sides of the arrowhead, so the chase meets at the point.
-const RUNS = [
-  [[[45, 95], [785, 95]], [[830, 52], [940, 125]]],
-  [[[45, 165], [785, 165]], [[830, 208], [940, 135]]],
-  [[[45, 130], [45, 131]]]
+// Globe bulbs in chase order: along the rail from the far end toward the
+// arrow, then the back of the arrowhead, then the tip.
+const BULBS = [
+  [835, 112, 'rail'], [675, 112, 'rail'], [515, 112, 'rail'], [355, 112, 'rail'], [200, 112, 'rail'],
+  [96, 72, 'head'], [96, 192, 'head'], [38, 132, 'head']
 ];
 
-function pointsAlong(path, spacing) {
-  const points = [];
-  let carry = 0;
-  for (let i = 0; i < path.length - 1; i++) {
-    const [x1, y1] = path[i];
-    const [x2, y2] = path[i + 1];
-    const len = Math.hypot(x2 - x1, y2 - y1);
-    for (let d = carry; d <= len; d += spacing) {
-      points.push([x1 + (x2 - x1) * d / len, y1 + (y2 - y1) * d / len]);
-    }
-    carry = spacing - ((len - carry) % spacing);
-  }
-  return points;
-}
-
 function buildBulbs() {
-  RUNS.forEach((pieces) => {
-    const points = pieces.flatMap(piece => pointsAlong(piece, BULB_SPACING));
-    points.forEach(([x, y], i) => {
-      const g = document.createElementNS(SVG_NS, 'g');
-      g.setAttribute('class', `bulb phase-${i % 3} ${i % 2 ? 'odd' : 'even'}`);
-      g.innerHTML = `<circle class="bulb-halo" cx="${x}" cy="${y}" r="26"/>`
-        + `<circle class="bulb-glass" cx="${x}" cy="${y}" r="8"/>`;
-      bulbsEl.appendChild(g);
-    });
+  BULBS.forEach(([x, y, where], i) => {
+    const g = document.createElementNS(SVG_NS, 'g');
+    g.setAttribute('class', `bulb phase-${i % 3}`);
+    // Rail bulbs screw into a socket on top of the rail; arrowhead bulbs sit on its face
+    const socket = where === 'rail'
+      ? `<rect class="bulb-socket" x="${x - 9}" y="${y}" width="18" height="10" rx="2"/>`
+      : '';
+    g.innerHTML = `<circle class="bulb-halo" cx="${x}" cy="${y - 6}" r="46"/>`
+      + socket
+      + `<circle class="bulb-glass" cx="${x}" cy="${y - 8}" r="17"/>`;
+    bulbsEl.appendChild(g);
   });
 }
 
-function setLights(mode = 'chase') {
+function setLights(mode = 'blink') {
   const modes = ['chase', 'blink', 'on', 'off'];
-  arrowEl.classList.remove(...modes.map(m => `lights-${m}`));
-  arrowEl.classList.add(`lights-${modes.includes(mode) ? mode : 'chase'}`);
+  signEl.classList.remove(...modes.map(m => `lights-${m}`));
+  signEl.classList.add(`lights-${modes.includes(mode) ? mode : 'blink'}`);
 }
 
-function setArrowDirection(direction = 'right') {
-  arrowEl.classList.toggle('left', direction === 'left');
+function setArrowDirection(direction = 'left') {
+  signEl.classList.toggle('right', direction === 'right');
 }
 
 // --- Letters ---------------------------------------------------------------
@@ -76,7 +61,8 @@ function buildTracks() {
   for (let r = 0; r < ROWS; r++) {
     const line = document.createElement('div');
     line.className = 'track-line';
-    line.style.top = `calc(${(r + 1) / ROWS * 100}% - ${0.9 * (1 - (r + 1) / ROWS)} * var(--u) - 0.1 * var(--u))`;
+    // Between rows, plus one under the last row
+    line.style.top = `calc(var(--pad-y) + ${r + 1} * var(--row-h) + ${r} * var(--row-gap) + var(--row-gap) / 2 - 0.12 * var(--u))`;
     tracksEl.appendChild(line);
   }
   for (let r = 0; r < ROWS; r++) {
@@ -232,7 +218,7 @@ async function load() {
 
 buildBulbs();
 buildTracks();
-setLights('chase');
+setLights('blink');
 
 // Wait for the sign font so the first message doesn't jump when it loads
 (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => {

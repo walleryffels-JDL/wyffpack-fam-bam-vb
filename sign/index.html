@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#05070d">
+  <meta name="theme-color" content="#1D2840">
   <title>Wyffpack Sign</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,39 +13,40 @@
 </head>
 <body>
   <main class="scene">
-    <div class="sign">
-      <div class="arrow-mount">
-        <svg class="arrow" id="arrow" viewBox="0 0 1000 260" aria-hidden="true">
-          <defs>
-            <radialGradient id="halo">
-              <stop offset="0" stop-color="#FFF4C2" stop-opacity="0.95"/>
-              <stop offset="0.35" stop-color="#FFD25A" stop-opacity="0.55"/>
-              <stop offset="1" stop-color="#FFB000" stop-opacity="0"/>
-            </radialGradient>
-            <linearGradient id="arrow-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#F6C42B"/>
-              <stop offset="1" stop-color="#E0A419"/>
-            </linearGradient>
-          </defs>
-          <polygon class="arrow-body"
-            points="20,70 800,70 800,10 980,130 800,250 800,190 20,190" />
-          <g id="bulbs"></g>
-        </svg>
-        <div class="bracket bracket-left"></div>
-        <div class="bracket bracket-right"></div>
-      </div>
+    <div class="sign" id="sign">
+      <!-- Black arrow rail with globe bulbs, across the top of the sign -->
+      <svg class="topper" id="topper" viewBox="0 0 920 250" aria-hidden="true">
+        <defs>
+          <radialGradient id="glass-off" cx="0.38" cy="0.32" r="0.75">
+            <stop offset="0" stop-color="#FFFFFF"/>
+            <stop offset="0.45" stop-color="#D9DCDF"/>
+            <stop offset="1" stop-color="#9DA2A8"/>
+          </radialGradient>
+          <radialGradient id="glass-on" cx="0.4" cy="0.35" r="0.7">
+            <stop offset="0" stop-color="#FFFFFF"/>
+            <stop offset="0.6" stop-color="#FFF8DC"/>
+            <stop offset="1" stop-color="#FFE7A0"/>
+          </radialGradient>
+          <radialGradient id="halo">
+            <stop offset="0" stop-color="#FFF6D6" stop-opacity="0.9"/>
+            <stop offset="0.4" stop-color="#FFE29A" stop-opacity="0.45"/>
+            <stop offset="1" stop-color="#FFD070" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#3A3D42"/>
+            <stop offset="0.25" stop-color="#16171A"/>
+            <stop offset="1" stop-color="#0B0B0D"/>
+          </linearGradient>
+        </defs>
+        <rect class="rail" x="118" y="115" width="802" height="37" rx="3"/>
+        <polygon class="arrowhead" points="124,28 124,236 4,132" />
+        <g id="bulbs"></g>
+      </svg>
 
       <div class="panel">
         <div class="tracks" id="tracks"></div>
-      </div>
-
-      <div class="base">
-        <div class="post post-left"></div>
-        <div class="post post-right"></div>
-        <div class="trailer"></div>
-        <div class="wheel wheel-left"></div>
-        <div class="wheel wheel-right"></div>
-        <div class="hitch"></div>
+        <div class="leg leg-left"><div class="foot"></div></div>
+        <div class="leg leg-right"><div class="foot"></div></div>
       </div>
     </div>
     <div class="ground"></div>

@@ -1,22 +1,25 @@
 /* One unit = 1% of the width of a 16:9 screen, whatever the screen shape */
 :root {
-  --u: min(1vw, calc(100vh / 56.25));
+  --base: min(1vw, calc(100vh / 56.25));
+  --u: var(--base);
   --cols: 20;
   --rows: 4;
-  --night: #05070d;
-  --frame: #2B2E33;
-  --frame-edge: #45494F;
-  --panel: #FBF7EA;
-  --letter: #141414;
-  --letter-red: #C8102E;
+  --row-h: calc(6.6 * var(--u));
+  --row-gap: calc(0.7 * var(--u));
+  --pad-y: calc(1 * var(--u));
+  --steel: #0E0F11;
+  --steel-edge: #34373C;
+  --letter: #111111;
+  --letter-red: #D0202E;
 }
 
 body {
-  background: var(--night);
+  background: #1D2840;
   overflow: hidden;
   cursor: none;
 }
 
+/* Dusk sky over a parking lot, so the black sign and the bulbs both read */
 .scene {
   position: relative;
   width: 100vw;
@@ -25,8 +28,8 @@ body {
   align-items: center;
   justify-content: center;
   background:
-    radial-gradient(ellipse 70% 55% at 50% 48%, rgba(255, 240, 200, 0.10), transparent 70%),
-    linear-gradient(180deg, #070B17 0%, #0B1222 60%, #10141C 100%);
+    radial-gradient(ellipse 60% 45% at 50% 52%, rgba(255, 244, 214, 0.16), transparent 70%),
+    linear-gradient(180deg, #172036 0%, #2C3854 55%, #4A5470 100%);
 }
 
 .ground {
@@ -34,144 +37,113 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  height: calc(50vh - 22.5 * var(--u));
-  background: linear-gradient(180deg, #181A1F, #0C0D10);
-  border-top: calc(0.15 * var(--u)) solid #23262C;
+  height: calc(50vh - 54.1 * 0.88 / 2 * var(--base) + 0.6 * var(--base));
+  background: linear-gradient(180deg, #2B2D32, #1A1B1F);
+  border-top: calc(0.2 * var(--u)) solid #3A3D44;
 }
 
+/* The sign: arrowhead hangs off one end, panel fills the rest */
 .sign {
   position: relative;
   z-index: 1;
-  width: calc(90 * var(--u));
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  /* Scaled down a little so the sign, legs and feet all fit with some sky around them */
+  --u: calc(var(--base) * 0.88);
+  width: calc(92 * var(--u));
+  height: calc(54.1 * var(--u));
 }
 
-/* --- Arrow -------------------------------------------------------------- */
-
-.arrow-mount {
-  position: relative;
-  width: calc(54 * var(--u));
-  margin-bottom: calc(1.4 * var(--u));
-}
-
-.arrow {
-  display: block;
+.topper {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: auto;
   overflow: visible;
-  position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
-.arrow.left {
+.sign.right .topper {
   transform: scaleX(-1);
 }
 
-.arrow-body {
-  fill: url(#arrow-fill);
-  stroke: #9C6C08;
-  stroke-width: 6;
+.rail,
+.arrowhead {
+  fill: url(#steel);
+  stroke: #000;
+  stroke-width: 2;
   stroke-linejoin: round;
 }
 
-.bulb-glass {
-  fill: #8A6A2A;
-}
+/* --- Globe bulbs ----------------------------------------------------------- */
 
-.bulb-halo {
-  fill: url(#halo);
-  opacity: 0;
-}
+.bulb-socket { fill: #2A2C30; }
+.bulb-glass { fill: url(#glass-off); stroke: rgba(0, 0, 0, 0.35); stroke-width: 1.5; }
+.bulb-halo { fill: url(#halo); opacity: 0; }
 
-.bulb.lit .bulb-glass { fill: #FFF6D0; }
-.bulb.lit .bulb-halo { opacity: 1; }
+.lights-on .bulb-glass { fill: url(#glass-on); }
+.lights-on .bulb-halo { opacity: 1; }
 
-/* Chase: three interleaved sets of bulbs take turns, so light runs toward the tip */
-.lights-chase .bulb .bulb-glass { animation: glass 0.9s steps(1, end) infinite; }
-.lights-chase .bulb .bulb-halo  { animation: halo 0.9s steps(1, end) infinite; }
-.lights-chase .bulb.phase-1 * { animation-delay: -0.6s; }
-.lights-chase .bulb.phase-2 * { animation-delay: -0.3s; }
+/* Chase: three sets of bulbs take turns, so the light runs toward the tip */
+.lights-chase .bulb * { animation: 1.2s steps(1, end) infinite; }
+.lights-chase .bulb .bulb-glass { animation-name: glass-third; }
+.lights-chase .bulb .bulb-halo { animation-name: halo-third; }
+.lights-chase .bulb.phase-1 * { animation-delay: -0.8s; }
+.lights-chase .bulb.phase-2 * { animation-delay: -0.4s; }
 
-/* Blink: every other bulb, alternating */
-.lights-blink .bulb .bulb-glass { animation: glass 1.2s steps(1, end) infinite; }
-.lights-blink .bulb .bulb-halo  { animation: halo 1.2s steps(1, end) infinite; }
-.lights-blink .bulb.odd * { animation-delay: -0.6s; }
-
-.lights-on .bulb .bulb-glass { fill: #FFF6D0; }
-.lights-on .bulb .bulb-halo { opacity: 1; }
-
-@keyframes glass {
-  0%   { fill: #FFF6D0; }
-  33%  { fill: #8A6A2A; }
-}
-
-@keyframes halo {
-  0%   { opacity: 1; }
-  33%  { opacity: 0; }
-}
-
+/* Flash: all bulbs on and off together, like the real sign */
+.lights-blink .bulb * { animation: 1.4s steps(1, end) infinite; }
 .lights-blink .bulb .bulb-glass { animation-name: glass-half; }
 .lights-blink .bulb .bulb-halo { animation-name: halo-half; }
 
-@keyframes glass-half {
-  0%   { fill: #FFF6D0; }
-  50%  { fill: #8A6A2A; }
-}
+@keyframes glass-third { 0% { fill: url(#glass-on); } 33% { fill: url(#glass-off); } }
+@keyframes halo-third  { 0% { opacity: 1; } 33% { opacity: 0; } }
+@keyframes glass-half  { 0% { fill: url(#glass-on); } 50% { fill: url(#glass-off); } }
+@keyframes halo-half   { 0% { opacity: 1; } 50% { opacity: 0; } }
 
-@keyframes halo-half {
-  0%   { opacity: 1; }
-  50%  { opacity: 0; }
-}
-
-.bracket {
-  position: absolute;
-  bottom: calc(-1.6 * var(--u));
-  width: calc(1.2 * var(--u));
-  height: calc(4 * var(--u));
-  background: linear-gradient(90deg, var(--frame), var(--frame-edge), var(--frame));
-}
-
-.bracket-left { left: 22%; }
-.bracket-right { left: 66%; }
-
-/* --- Letter panel ------------------------------------------------------- */
+/* --- Letter panel ---------------------------------------------------------- */
 
 .panel {
-  position: relative;
-  width: 100%;
-  padding: calc(1.6 * var(--u)) calc(2.2 * var(--u));
-  background: linear-gradient(180deg, var(--frame-edge), var(--frame) 12%, var(--frame) 88%, #1E2024);
-  border-radius: calc(0.6 * var(--u));
+  position: absolute;
+  top: calc(15 * var(--u));
+  left: calc(12.4 * var(--u));
+  width: calc(79.6 * var(--u));
+  padding: calc(0.9 * var(--u));
+  background: linear-gradient(180deg, var(--steel-edge), var(--steel) 8%, var(--steel) 92%, #000);
   box-shadow:
-    0 0 calc(6 * var(--u)) rgba(255, 244, 210, 0.22),
-    0 calc(1 * var(--u)) calc(2 * var(--u)) rgba(0, 0, 0, 0.6);
-  z-index: 1;
+    0 0 calc(5 * var(--u)) rgba(255, 246, 220, 0.25),
+    0 calc(0.8 * var(--u)) calc(2 * var(--u)) rgba(0, 0, 0, 0.55);
+}
+
+.sign.right .panel {
+  left: 0;
 }
 
 .tracks {
   position: relative;
   display: grid;
   grid-template-columns: repeat(var(--cols), 1fr);
-  grid-template-rows: repeat(var(--rows), calc(5.4 * var(--u)));
-  row-gap: calc(0.9 * var(--u));
-  padding: calc(1.2 * var(--u)) calc(1.4 * var(--u));
-  /* Backlit plastic: brighter in the middle, a touch warmer at the edges */
+  grid-template-rows: repeat(var(--rows), var(--row-h));
+  row-gap: var(--row-gap);
+  padding: var(--pad-y) calc(1.2 * var(--u));
+  /* Backlit white face with vertical ribs, like the real sign's plastic */
   background:
-    radial-gradient(ellipse 80% 90% at 50% 50%, #FFFFFF 0%, var(--panel) 60%, #EFE6CC 100%);
-  box-shadow: inset 0 0 calc(1.2 * var(--u)) rgba(120, 100, 60, 0.35);
+    repeating-linear-gradient(90deg,
+      rgba(0, 0, 0, 0) 0,
+      rgba(70, 70, 80, 0.07) calc(0.45 * var(--u)),
+      rgba(255, 255, 255, 0.5) calc(0.7 * var(--u)),
+      rgba(0, 0, 0, 0) calc(1.1 * var(--u))),
+    radial-gradient(ellipse 85% 95% at 50% 50%, #FFFFFF 0%, #F7F6F2 65%, #E9E7E0 100%);
   overflow: hidden;
 }
 
-/* Horizontal letter tracks behind each row */
+/* Thin grey letter tracks between the rows */
 .track-line {
   position: absolute;
   left: 0;
   right: 0;
-  height: calc(0.22 * var(--u));
-  background: rgba(90, 80, 60, 0.28);
-  box-shadow: 0 calc(0.08 * var(--u)) 0 rgba(255, 255, 255, 0.6);
+  height: calc(0.25 * var(--u));
+  background: rgba(60, 60, 70, 0.35);
+  box-shadow: 0 calc(0.1 * var(--u)) 0 rgba(255, 255, 255, 0.7);
 }
 
 .slot {
@@ -185,11 +157,10 @@ body {
   display: block;
   font-family: 'Anton', Impact, 'Arial Narrow', 'Helvetica Neue', Arial, sans-serif;
   font-weight: 400;
-  font-size: calc(4.8 * var(--u));
+  font-size: calc(6.3 * var(--u));
   line-height: 1;
   color: var(--letter);
-  text-shadow: calc(0.08 * var(--u)) calc(0.1 * var(--u)) 0 rgba(0, 0, 0, 0.18);
-  transform: rotate(var(--tilt, 0deg)) translateY(var(--nudge, 0));
+  transform: rotate(var(--tilt, 0deg)) translateY(var(--nudge, 0)) scaleY(1.06);
   transition: transform 0.45s cubic-bezier(.2, .8, .3, 1), opacity 0.35s ease;
 }
 
@@ -208,53 +179,26 @@ body {
   transition: none;
 }
 
-/* --- Posts, trailer, wheels -------------------------------------------- */
+/* --- Legs with T feet ------------------------------------------------------ */
 
-.base {
-  position: relative;
-  width: 100%;
-  height: calc(7.5 * var(--u));
-}
-
-.post {
+.leg {
   position: absolute;
-  top: 0;
-  width: calc(1.6 * var(--u));
-  height: calc(4.2 * var(--u));
-  background: linear-gradient(90deg, var(--frame), var(--frame-edge), var(--frame));
+  top: 100%;
+  width: calc(1.3 * var(--u));
+  height: calc(6.8 * var(--u));
+  background: linear-gradient(90deg, #000, #2A2D31 45%, #0B0B0D);
 }
 
-.post-left { left: 18%; }
-.post-right { right: 18%; }
+.leg-left { left: 2%; }
+.leg-right { right: 2%; }
 
-.trailer {
+.foot {
   position: absolute;
-  top: calc(4.2 * var(--u));
-  left: 10%;
-  right: 10%;
-  height: calc(1.4 * var(--u));
-  background: linear-gradient(180deg, #3A3E44, #26292D);
-  border-radius: calc(0.3 * var(--u));
+  bottom: 0;
+  left: 50%;
+  width: calc(7 * var(--u));
+  height: calc(1.3 * var(--u));
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #2A2D31, #000);
+  border-radius: calc(0.15 * var(--u));
 }
-
-.hitch {
-  position: absolute;
-  top: calc(4.55 * var(--u));
-  left: 0;
-  width: 10.5%;
-  height: calc(0.7 * var(--u));
-  background: #26292D;
-  border-radius: calc(0.4 * var(--u)) 0 0 calc(0.4 * var(--u));
-}
-
-.wheel {
-  position: absolute;
-  top: calc(4 * var(--u));
-  width: calc(3.4 * var(--u));
-  height: calc(3.4 * var(--u));
-  border-radius: 50%;
-  background: radial-gradient(circle, #6B6F75 0 22%, #1A1B1E 24% 58%, #0E0F11 60%);
-}
-
-.wheel-left { left: 30%; }
-.wheel-right { right: 30%; }

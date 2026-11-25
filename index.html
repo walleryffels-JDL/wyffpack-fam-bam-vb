@@ -137,30 +137,33 @@
     }
 
     .preview-sign {
-      background: linear-gradient(180deg, #070B17, #0B1222);
+      background: linear-gradient(180deg, #172036, #4A5470);
       flex-direction: column;
-      gap: 6%;
-      padding: 6% 8%;
+      gap: 0;
+      padding: 5% 6%;
     }
 
     .preview-sign svg {
-      width: 62%;
+      width: 100%;
+      margin-bottom: -6%;
       height: auto;
     }
 
     .preview-panel {
-      width: 100%;
+      width: 86.6%;
+      align-self: flex-end;
       flex: 1;
-      background: #FBF7EA;
-      border: calc(0.6 * var(--u)) solid #2B2E33;
+      background: #FBFBF8;
+      border: calc(0.5 * var(--u)) solid #111;
       border-radius: 4%;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       font-family: Impact, 'Arial Narrow', sans-serif;
-      font-size: max(11px, calc(1.6 * var(--u)));
-      letter-spacing: 0.18em;
+      font-size: max(11px, calc(1.5 * var(--u)));
+      font-weight: 700;
+      letter-spacing: 0.06em;
       white-space: nowrap;
       color: #141414;
       box-shadow: 0 0 calc(2 * var(--u)) rgba(255, 244, 210, 0.25);
@@ -181,15 +184,13 @@
 
     <a class="choice" id="choose-sign" href="sign/">
       <div class="preview preview-sign" aria-hidden="true">
-        <svg viewBox="0 0 1000 260">
-          <polygon points="20,70 800,70 800,10 980,130 800,250 800,190 20,190"
-            fill="#F6C42B" stroke="#9C6C08" stroke-width="10" stroke-linejoin="round"/>
-          <g fill="#FFF6D0">
-            <circle cx="80" cy="100" r="12"/><circle cx="200" cy="100" r="12"/><circle cx="320" cy="100" r="12"/>
-            <circle cx="440" cy="100" r="12"/><circle cx="560" cy="100" r="12"/><circle cx="680" cy="100" r="12"/>
-            <circle cx="80" cy="160" r="12"/><circle cx="200" cy="160" r="12"/><circle cx="320" cy="160" r="12"/>
-            <circle cx="440" cy="160" r="12"/><circle cx="560" cy="160" r="12"/><circle cx="680" cy="160" r="12"/>
-            <circle cx="860" cy="80" r="12"/><circle cx="860" cy="180" r="12"/><circle cx="930" cy="130" r="12"/>
+        <svg viewBox="0 0 920 250">
+          <rect x="118" y="115" width="802" height="37" fill="#111"/>
+          <polygon points="124,28 124,236 4,132" fill="#111"/>
+          <g fill="#FFF8DC">
+            <circle cx="835" cy="100" r="20"/><circle cx="675" cy="100" r="20"/><circle cx="515" cy="100" r="20"/>
+            <circle cx="355" cy="100" r="20"/><circle cx="200" cy="100" r="20"/>
+            <circle cx="96" cy="66" r="20"/><circle cx="96" cy="186" r="20"/><circle cx="38" cy="128" r="20"/>
           </g>
         </svg>
         <div class="preview-panel"><div>WELCOME HOME</div><div class="red">WYFF PACK</div></div>
