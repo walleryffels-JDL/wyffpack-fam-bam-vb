@@ -57,6 +57,10 @@ body {
   transform: scaleX(-1);
 }
 
+/* The arrow tip sticks out past the sign's box; nudge it back to the middle */
+.sign { transform: translateX(calc(2.2 * var(--u))); }
+.sign.right { transform: translateX(calc(-2.2 * var(--u))); }
+
 .rail,
 .arrowhead {
   fill: url(#steel);

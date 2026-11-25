@@ -17,7 +17,7 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 // arrow, then the back of the arrowhead, then the tip.
 const BULBS = [
   [835, 112, 'rail'], [675, 112, 'rail'], [515, 112, 'rail'], [355, 112, 'rail'], [200, 112, 'rail'],
-  [96, 72, 'head'], [96, 192, 'head'], [38, 132, 'head']
+  [84, 52, 'head'], [84, 212, 'head'], [10, 132, 'head']
 ];
 
 function buildBulbs() {
@@ -26,11 +26,11 @@ function buildBulbs() {
     g.setAttribute('class', `bulb phase-${i % 3}`);
     // Rail bulbs screw into a socket on top of the rail; arrowhead bulbs sit on its face
     const socket = where === 'rail'
-      ? `<rect class="bulb-socket" x="${x - 9}" y="${y}" width="18" height="10" rx="2"/>`
+      ? `<rect class="bulb-socket" x="${x - 8}" y="${y}" width="16" height="10" rx="2"/>`
       : '';
-    g.innerHTML = `<circle class="bulb-halo" cx="${x}" cy="${y - 6}" r="46"/>`
+    g.innerHTML = `<circle class="bulb-halo" cx="${x}" cy="${y - 6}" r="40"/>`
       + socket
-      + `<circle class="bulb-glass" cx="${x}" cy="${y - 8}" r="17"/>`;
+      + `<circle class="bulb-glass" cx="${x}" cy="${y - 8}" r="14"/>`;
     bulbsEl.appendChild(g);
   });
 }
