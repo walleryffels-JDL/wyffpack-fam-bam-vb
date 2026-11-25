@@ -41,8 +41,8 @@ function setLights(mode = 'blink') {
   signEl.classList.add(`lights-${modes.includes(mode) ? mode : 'blink'}`);
 }
 
-function setArrowDirection(direction = 'left') {
-  signEl.classList.toggle('right', direction === 'right');
+function setArrowDirection(direction = 'right') {
+  signEl.classList.toggle('right', direction !== 'left');
 }
 
 // --- Letters ---------------------------------------------------------------

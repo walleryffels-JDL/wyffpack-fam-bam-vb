@@ -1,5 +1,5 @@
 {
-  "arrow": "left",
+  "arrow": "right",
   "lights": "blink",
   "message": {
     "lines": ["WELCOME HOME", "{red}WYFF PACK"]

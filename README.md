@@ -56,13 +56,13 @@ Edit `messages.json`. (The grid line in the example below is shortened.) You can
 
 ## The sign page
 
-There's a second page at **`/sign/`** (https://walleryffels-jdl.github.io/wyffpack-fam-bam-vb/sign/). It looks like a roadside marquee sign: a black arrow along the top with flashing globe bulbs, a white ribbed panel with black and red slide-in letters, and legs with T feet. It shows one message and keeps it up until you change it. When you do, the old letters come off and the new ones slide in.
+There's a second page at **`/sign/`** (https://walleryffels-jdl.github.io/wyffpack-fam-bam-vb/sign/). It looks like a roadside marquee sign: a black arrow along the top with flashing globe bulbs, a white ribbed panel with black and red slide-in letters. It shows one message and keeps it up until you change it. When you do, the old letters come off and the new ones slide in.
 
 Edit `sign/messages.json`:
 
 ```json
 {
-  "arrow": "left",
+  "arrow": "right",
   "lights": "blink",
   "message": { "lines": ["WELCOME HOME", "{red}WYFF PACK"] }
 }
@@ -70,7 +70,7 @@ Edit `sign/messages.json`:
 
 - **message** is plain text, which wraps and centers automatically, or `{ "lines": [...] }` for one line per row. The panel holds 4 rows of 20 letters.
 - `{red}` switches the letters that follow to red, and `{black}` switches back.
-- **arrow** is `left` or `right`.
+- **arrow** is `right` or `left`.
 - **lights** is `blink` (all flash together), `chase` (running toward the tip), `on` or `off`.
 
 ## URL options

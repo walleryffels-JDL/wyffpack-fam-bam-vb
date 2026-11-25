@@ -19,7 +19,7 @@ body {
   cursor: none;
 }
 
-/* Dusk sky over a parking lot, so the black sign and the bulbs both read */
+/* Dusk sky, so the black sign and the bulbs both read */
 .scene {
   position: relative;
   width: 100vw;
@@ -32,24 +32,15 @@ body {
     linear-gradient(180deg, #172036 0%, #2C3854 55%, #4A5470 100%);
 }
 
-.ground {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: calc(50vh - 54.1 * 0.88 / 2 * var(--base) + 0.6 * var(--base));
-  background: linear-gradient(180deg, #2B2D32, #1A1B1F);
-  border-top: calc(0.2 * var(--u)) solid #3A3D44;
-}
 
 /* The sign: arrowhead hangs off one end, panel fills the rest */
 .sign {
   position: relative;
   z-index: 1;
-  /* Scaled down a little so the sign, legs and feet all fit with some sky around them */
-  --u: calc(var(--base) * 0.88);
+  /* Scaled down a little so the whole sign fits with some sky around it */
+  --u: calc(var(--base) * 0.95);
   width: calc(92 * var(--u));
-  height: calc(54.1 * var(--u));
+  height: calc(47.3 * var(--u));
 }
 
 .topper {
@@ -177,28 +168,4 @@ body {
   opacity: 0;
   transform: translateX(160%) rotate(var(--tilt, 0deg));
   transition: none;
-}
-
-/* --- Legs with T feet ------------------------------------------------------ */
-
-.leg {
-  position: absolute;
-  top: 100%;
-  width: calc(1.3 * var(--u));
-  height: calc(6.8 * var(--u));
-  background: linear-gradient(90deg, #000, #2A2D31 45%, #0B0B0D);
-}
-
-.leg-left { left: 2%; }
-.leg-right { right: 2%; }
-
-.foot {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  width: calc(7 * var(--u));
-  height: calc(1.3 * var(--u));
-  transform: translateX(-50%);
-  background: linear-gradient(180deg, #2A2D31, #000);
-  border-radius: calc(0.15 * var(--u));
 }
