@@ -1,6 +1,6 @@
 {
   "arrow": "right",
-  "lights": "chase",
+  "lights": "blink",
   "theme": "christmas",
   "message": {
     "lines": ["{candy}MERRY", "{candy}CHRISTMAS", "{black}FROM THE", "{green}WYFF PACK"]

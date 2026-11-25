@@ -192,13 +192,11 @@ body {
 
 .theme-christmas .snowcap { display: inline; }
 
-/* Red, green and gold bulbs, repeating */
+/* Red, white and green bulbs, always in that order (white uses the normal bulb) */
 .theme-christmas .tint-red .bulb-lit { fill: url(#glass-red); }
 .theme-christmas .tint-red .bulb-halo { fill: url(#halo-red); }
 .theme-christmas .tint-green .bulb-lit { fill: url(#glass-green); }
 .theme-christmas .tint-green .bulb-halo { fill: url(#halo-green); }
-.theme-christmas .tint-gold .bulb-lit { fill: url(#glass-gold); }
-.theme-christmas .tint-gold .bulb-halo { fill: url(#halo-gold); }
 
 /* A colder, snowier night sky */
 .theme-christmas .scene {

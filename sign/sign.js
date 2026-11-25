@@ -14,18 +14,18 @@ const snowEl = document.getElementById('snow');
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
-// Globe bulbs in chase order: down the middle of the rail from the far end
-// toward the arrow, then the back of the arrowhead, then the tip.
+// Globe bulbs in order: down the middle of the rail from the far end toward
+// the arrow, then around the arrowhead (top, tip, bottom).
 const BULBS = [
   [835, 132], [675, 132], [515, 132], [355, 132], [200, 132],
-  [84, 52], [84, 212], [10, 132]
+  [84, 52], [10, 132], [84, 212]
 ];
 
 function buildBulbs() {
   BULBS.forEach(([x, y], i) => {
     const g = document.createElementNS(SVG_NS, 'g');
-    // Colors only show with the Christmas theme: red, green, gold, repeating
-    g.setAttribute('class', `bulb phase-${i % 3} tint-${['red', 'green', 'gold'][i % 3]}`);
+    // Colors only show with the Christmas theme: red, white, green, repeating
+    g.setAttribute('class', `bulb phase-${i % 3} tint-${['red', 'white', 'green'][i % 3]}`);
     // Each globe sits in a dark socket ring on the face of the arrow; the lit
     // glass fades in over the unlit glass when the bulb is on
     g.innerHTML = `<circle class="bulb-halo" cx="${x}" cy="${y}" r="44"/>`

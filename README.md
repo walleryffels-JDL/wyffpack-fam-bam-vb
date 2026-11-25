@@ -63,7 +63,7 @@ Edit `sign/messages.json`:
 ```json
 {
   "arrow": "right",
-  "lights": "chase",
+  "lights": "blink",
   "theme": "christmas",
   "message": { "lines": ["{candy}MERRY", "{candy}CHRISTMAS", "{black}FROM THE", "{green}WYFF PACK"] }
 }
@@ -73,7 +73,7 @@ Edit `sign/messages.json`:
 - `{red}`, `{green}` and `{black}` switch the color of the letters that follow. `{candy}` alternates red and green letters.
 - **arrow** is `right` or `left`.
 - **lights** is `blink` (all flash together), `chase` (running toward the tip), `on` or `off`.
-- **theme** `"christmas"` adds red, green and gold bulbs, snow on the arrow and falling snow. Remove the line (or set it to `"none"`) to go back to the plain sign.
+- **theme** `"christmas"` makes the bulbs red, white and green (always in that order), snow on the arrow and falling snow. Remove the line (or set it to `"none"`) to go back to the plain sign.
 
 ## URL options
 
