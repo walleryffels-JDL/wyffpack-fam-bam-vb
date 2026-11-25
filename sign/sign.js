@@ -9,6 +9,7 @@ const tracksEl = document.getElementById('tracks');
 const signEl = document.getElementById('sign');
 const bulbsEl = document.getElementById('bulbs');
 const snowEl = document.getElementById('snow');
+const snowFrontEl = document.getElementById('snow-front');
 
 // --- Arrow bulbs ----------------------------------------------------------
 
@@ -57,38 +58,142 @@ function setTheme(theme) {
   if (!christmas && snow) { snow.stop(); snow = null; }
 }
 
-/** Light snowfall drawn on a canvas behind the sign. */
-function startSnow() {
-  const ctx = snowEl.getContext('2d');
-  let flakes = [];
-  let running = true;
+/** Small repeatable random numbers, so the snow pile has the same shape every time. */
+function seeded(seed) {
+  return () => {
+    seed = (seed * 16807) % 2147483647;
+    return (seed - 1) / 2147483646;
+  };
+}
 
-  function resize() {
-    snowEl.width = innerWidth;
-    snowEl.height = innerHeight;
-    const count = Math.round(innerWidth / 18);
-    flakes = Array.from({ length: count }, () => ({
+/** Smooth path through points (Catmull-Rom turned into curves). */
+function smoothPath(points) {
+  let d = `M${points[0][0].toFixed(1)},${points[0][1].toFixed(1)}`;
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[Math.max(0, i - 1)];
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    const p3 = points[Math.min(points.length - 1, i + 2)];
+    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+    const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+    d += ` C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+  }
+  return d;
+}
+
+/**
+ * Snow lying on the rail: an uneven drift on top that rounds off at the ends,
+ * and a ragged lip hanging a little over the front edge.
+ */
+function buildSnowPile() {
+  const rand = seeded(42);
+  const RAIL_TOP = 90;
+  const LEFT = 116;
+  const RIGHT = 922;
+  const top = [];
+  const lip = [];
+
+  // Closer points near the ends so the pile can curve down smoothly there
+  const xs = [LEFT, LEFT + 8, LEFT + 20, LEFT + 36];
+  for (let x = LEFT + 70; x < RIGHT - 50; x += 46) xs.push(x);
+  xs.push(RIGHT - 36, RIGHT - 20, RIGHT - 8, RIGHT);
+
+  for (const x of xs) {
+    const t = (x - LEFT) / (RIGHT - LEFT);
+    const fromEnd = Math.min(x - LEFT, RIGHT - x);
+    const endFade = Math.sin(Math.min(1, fromEnd / 55) * Math.PI / 2);   // rounds off at the ends
+    const swell = 0.8 + 0.2 * Math.sin(t * Math.PI * 2.6 + 0.8);         // long, gentle drifts
+    const depth = (24 + rand() * 7) * swell * endFade + 1;
+    top.push([x, RAIL_TOP - depth]);
+    lip.push([x, RAIL_TOP + 4 + rand() * 5 * endFade]);
+  }
+
+  const topPath = smoothPath(top);
+  const lipPath = smoothPath(lip.reverse()).replace(/^M/, 'L');
+  const d = `${topPath} ${lipPath} Z`;
+
+  document.getElementById('snow-body').setAttribute('d', d);
+  document.getElementById('snow-texture').setAttribute('d', d);
+  const shadow = document.getElementById('snow-shadow');
+  shadow.setAttribute('d', d);
+  shadow.setAttribute('transform', 'translate(0 5)');
+}
+
+/** A soft, round snowflake image, drawn once and reused for every flake. */
+function makeFlakeSprite(size, softness) {
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const g = c.getContext('2d');
+  const grad = g.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+  grad.addColorStop(softness, 'rgba(255, 255, 255, 0.8)');
+  grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  g.fillStyle = grad;
+  g.fillRect(0, 0, size, size);
+  return c;
+}
+
+/**
+ * Falling snow with depth: lots of small, slow, faint flakes far away, fewer
+ * bigger ones close up, and a handful of large out-of-focus flakes drifting in
+ * front of the sign. Everything sways with a shared, slowly changing breeze.
+ */
+function startSnow() {
+  const back = snowEl.getContext('2d');
+  const front = snowFrontEl.getContext('2d');
+  const sharp = makeFlakeSprite(32, 0.35);
+  const blurry = makeFlakeSprite(64, 0.05);
+  let backFlakes = [];
+  let frontFlakes = [];
+  let running = true;
+  let time = 0;
+
+  function makeFlake(isFront) {
+    const z = isFront ? 1 : Math.pow(Math.random(), 1.6); // most flakes are far away
+    return {
       x: Math.random() * innerWidth,
       y: Math.random() * innerHeight,
-      r: 1 + Math.random() * 2.6,
-      speed: 0.4 + Math.random() * 0.9,
-      drift: Math.random() * Math.PI * 2
-    }));
+      z,
+      size: isFront ? 10 + Math.random() * 14 : 1.5 + z * 5,
+      fall: isFront ? 1.6 + Math.random() * 1.2 : 0.25 + z * 1.1 + Math.random() * 0.2,
+      sway: Math.random() * Math.PI * 2,
+      swaySpeed: 0.004 + Math.random() * 0.012,
+      alpha: isFront ? 0.25 + Math.random() * 0.25 : 0.3 + z * 0.65
+    };
+  }
+
+  function resize() {
+    for (const c of [snowEl, snowFrontEl]) {
+      c.width = innerWidth;
+      c.height = innerHeight;
+    }
+    backFlakes = Array.from({ length: Math.round(innerWidth / 7) }, () => makeFlake(false));
+    frontFlakes = Array.from({ length: Math.round(innerWidth / 160) }, () => makeFlake(true));
+  }
+
+  function draw(ctx, flakes, sprite, breeze) {
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    for (const f of flakes) {
+      f.sway += f.swaySpeed;
+      f.y += f.fall;
+      f.x += breeze * (0.3 + f.z) + Math.sin(f.sway) * 0.3 * (0.4 + f.z);
+      if (f.y > innerHeight + f.size) {
+        Object.assign(f, makeFlake(flakes === frontFlakes), { y: -f.size });
+      }
+      if (f.x > innerWidth + f.size) f.x = -f.size;
+      if (f.x < -f.size) f.x = innerWidth + f.size;
+      ctx.globalAlpha = f.alpha;
+      ctx.drawImage(sprite, f.x - f.size / 2, f.y - f.size / 2, f.size, f.size);
+    }
+    ctx.globalAlpha = 1;
   }
 
   function frame() {
     if (!running) return;
-    ctx.clearRect(0, 0, snowEl.width, snowEl.height);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-    for (const f of flakes) {
-      f.y += f.speed;
-      f.drift += 0.01;
-      f.x += Math.sin(f.drift) * 0.35;
-      if (f.y > snowEl.height + 5) { f.y = -5; f.x = Math.random() * snowEl.width; }
-      ctx.beginPath();
-      ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    time += 1;
+    const breeze = 0.25 + Math.sin(time / 900) * 0.35 + Math.sin(time / 230) * 0.12;
+    draw(back, backFlakes, sharp, breeze);
+    draw(front, frontFlakes, blurry, breeze);
     requestAnimationFrame(frame);
   }
 
@@ -99,7 +204,8 @@ function startSnow() {
     stop() {
       running = false;
       removeEventListener('resize', resize);
-      ctx.clearRect(0, 0, snowEl.width, snowEl.height);
+      back.clearRect(0, 0, snowEl.width, snowEl.height);
+      front.clearRect(0, 0, snowFrontEl.width, snowFrontEl.height);
     }
   };
 }
@@ -294,6 +400,7 @@ async function load() {
 }
 
 buildBulbs();
+buildSnowPile();
 buildTracks();
 setLights('blink');
 

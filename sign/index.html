@@ -48,6 +48,29 @@
             <stop offset="0.4" stop-color="#30D050" stop-opacity="0.4"/>
             <stop offset="1" stop-color="#00B030" stop-opacity="0"/>
           </radialGradient>
+          <linearGradient id="snow-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#FFFFFF"/>
+            <stop offset="0.45" stop-color="#F4F7FB"/>
+            <stop offset="0.8" stop-color="#DCE5EF"/>
+            <stop offset="1" stop-color="#B7C6D8"/>
+          </linearGradient>
+          <!-- Roughens the snow's outline so it isn't a smooth cartoon edge -->
+          <filter id="snow-rough" x="-2%" y="-40%" width="104%" height="180%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="7" result="noise"/>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="4" xChannelSelector="R" yChannelSelector="G" result="lumpy"/>
+            <feGaussianBlur in="lumpy" stdDeviation="0.9"/>
+          </filter>
+          <!-- Fine grainy shading, like packed snow catching the light -->
+          <filter id="snow-grain" x="-2%" y="-40%" width="104%" height="180%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="2" seed="11" result="grain"/>
+            <feDiffuseLighting in="grain" surfaceScale="2" lighting-color="#FFFFFF" result="lit">
+              <feDistantLight azimuth="250" elevation="55"/>
+            </feDiffuseLighting>
+            <feComposite in="lit" in2="SourceGraphic" operator="in"/>
+          </filter>
+          <filter id="snow-blur" x="-5%" y="-50%" width="110%" height="200%">
+            <feGaussianBlur stdDeviation="4"/>
+          </filter>
           <radialGradient id="halo">
             <stop offset="0" stop-color="#FFF6D6" stop-opacity="0.9"/>
             <stop offset="0.4" stop-color="#FFE29A" stop-opacity="0.45"/>
@@ -61,10 +84,12 @@
         </defs>
         <rect class="rail" x="118" y="90" width="802" height="85" rx="4"/>
         <polygon class="arrowhead" points="124,-14 124,278 -44,132" />
-        <!-- Snow piled along the top of the arrow (Christmas theme only) -->
-        <path class="snowcap" d="M118,96 C140,70 170,74 190,82 C215,66 250,70 270,80 C300,64 335,72 355,80
-          C385,66 420,70 440,80 C470,64 505,70 525,82 C555,66 590,72 610,80 C640,64 675,70 695,80
-          C725,66 760,70 780,82 C810,66 845,70 865,80 C885,70 905,72 920,84 L920,100 L118,100 Z"/>
+        <!-- Snow piled along the top of the arrow (Christmas theme only); shape is drawn by sign.js -->
+        <g class="snowcap">
+          <path class="snow-shadow" id="snow-shadow"/>
+          <path class="snow-body" id="snow-body"/>
+          <path class="snow-texture" id="snow-texture"/>
+        </g>
         <g id="bulbs"></g>
       </svg>
 
@@ -72,6 +97,7 @@
         <div class="tracks" id="tracks"></div>
       </div>
     </div>
+    <canvas class="snow snow-front" id="snow-front" aria-hidden="true"></canvas>
   </main>
   <script type="module" src="sign.js"></script>
 </body>

@@ -183,12 +183,14 @@ body {
   pointer-events: none;
 }
 
-.snowcap {
-  display: none;
-  fill: #FFFFFF;
-  stroke: #DDE6F0;
-  stroke-width: 2;
+.snow-front {
+  z-index: 3;
 }
+
+.snowcap { display: none; }
+.snow-shadow { fill: rgba(0, 0, 0, 0.55); filter: url(#snow-blur); }
+.snow-body { fill: url(#snow-fill); filter: url(#snow-rough); }
+.snow-texture { filter: url(#snow-grain); opacity: 0.12; mix-blend-mode: multiply; }
 
 .theme-christmas .snowcap { display: inline; }
 
