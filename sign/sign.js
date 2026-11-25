@@ -8,6 +8,7 @@ const POLL_SECONDS = 60;
 const tracksEl = document.getElementById('tracks');
 const signEl = document.getElementById('sign');
 const bulbsEl = document.getElementById('bulbs');
+const snowEl = document.getElementById('snow');
 
 // --- Arrow bulbs ----------------------------------------------------------
 
@@ -23,11 +24,14 @@ const BULBS = [
 function buildBulbs() {
   BULBS.forEach(([x, y], i) => {
     const g = document.createElementNS(SVG_NS, 'g');
-    g.setAttribute('class', `bulb phase-${i % 3}`);
-    // Each globe sits in a dark socket ring on the face of the arrow
+    // Colors only show with the Christmas theme: red, green, gold, repeating
+    g.setAttribute('class', `bulb phase-${i % 3} tint-${['red', 'green', 'gold'][i % 3]}`);
+    // Each globe sits in a dark socket ring on the face of the arrow; the lit
+    // glass fades in over the unlit glass when the bulb is on
     g.innerHTML = `<circle class="bulb-halo" cx="${x}" cy="${y}" r="44"/>`
       + `<circle class="bulb-socket" cx="${x}" cy="${y}" r="21"/>`
-      + `<circle class="bulb-glass" cx="${x}" cy="${y}" r="17"/>`;
+      + `<circle class="bulb-glass" cx="${x}" cy="${y}" r="17"/>`
+      + `<circle class="bulb-lit" cx="${x}" cy="${y}" r="17"/>`;
     bulbsEl.appendChild(g);
   });
 }
@@ -40,6 +44,64 @@ function setLights(mode = 'blink') {
 
 function setArrowDirection(direction = 'right') {
   signEl.classList.toggle('right', direction !== 'left');
+}
+
+// --- Themes ---------------------------------------------------------------
+
+let snow = null;
+
+function setTheme(theme) {
+  const christmas = theme === 'christmas';
+  document.body.classList.toggle('theme-christmas', christmas);
+  if (christmas && !snow) snow = startSnow();
+  if (!christmas && snow) { snow.stop(); snow = null; }
+}
+
+/** Light snowfall drawn on a canvas behind the sign. */
+function startSnow() {
+  const ctx = snowEl.getContext('2d');
+  let flakes = [];
+  let running = true;
+
+  function resize() {
+    snowEl.width = innerWidth;
+    snowEl.height = innerHeight;
+    const count = Math.round(innerWidth / 18);
+    flakes = Array.from({ length: count }, () => ({
+      x: Math.random() * innerWidth,
+      y: Math.random() * innerHeight,
+      r: 1 + Math.random() * 2.6,
+      speed: 0.4 + Math.random() * 0.9,
+      drift: Math.random() * Math.PI * 2
+    }));
+  }
+
+  function frame() {
+    if (!running) return;
+    ctx.clearRect(0, 0, snowEl.width, snowEl.height);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+    for (const f of flakes) {
+      f.y += f.speed;
+      f.drift += 0.01;
+      f.x += Math.sin(f.drift) * 0.35;
+      if (f.y > snowEl.height + 5) { f.y = -5; f.x = Math.random() * snowEl.width; }
+      ctx.beginPath();
+      ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    requestAnimationFrame(frame);
+  }
+
+  resize();
+  addEventListener('resize', resize);
+  requestAnimationFrame(frame);
+  return {
+    stop() {
+      running = false;
+      removeEventListener('resize', resize);
+      ctx.clearRect(0, 0, snowEl.width, snowEl.height);
+    }
+  };
 }
 
 // --- Letters ---------------------------------------------------------------
@@ -74,20 +136,33 @@ function buildTracks() {
       letter.style.setProperty('--nudge', `${nudge.toFixed(2)}em`);
       slot.appendChild(letter);
       tracksEl.appendChild(slot);
-      row.push({ el: letter, ch: ' ', red: false });
+      row.push({ el: letter, ch: ' ', color: 'black' });
     }
     slots.push(row);
   }
 }
 
-/** Turn a line into [{ ch, red }]; {red} and {black} switch letter color. */
+const BLANK = { ch: ' ', color: 'black' };
+
+/**
+ * Turn a line into [{ ch, color }]. {black}, {red} and {green} switch the
+ * color of the letters that follow; {candy} alternates red and green.
+ */
 function lineToCells(line, state) {
   const cells = [];
-  const re = /\{(red|black)\}|([\s\S])/gi;
+  const re = /\{(black|red|green|candy)\}|([\s\S])/gi;
   let m;
   while ((m = re.exec(line))) {
-    if (m[1]) state.red = m[1].toLowerCase() === 'red';
-    else cells.push({ ch: m[2].toUpperCase(), red: state.red });
+    if (m[1]) {
+      state.color = m[1].toLowerCase();
+      continue;
+    }
+    const ch = m[2].toUpperCase();
+    let color = state.color;
+    if (color === 'candy') {
+      color = ch === ' ' ? 'black' : (state.candyIndex++ % 2 ? 'green' : 'red');
+    }
+    cells.push({ ch, color });
   }
   return cells;
 }
@@ -108,7 +183,7 @@ function wrap(cells) {
   // Keep a dash with the word after it, so "- DAD" never splits
   for (let i = words.length - 2; i >= 0; i--) {
     if (words[i].length === 1 && words[i][0].ch === '-') {
-      words.splice(i, 2, [...words[i], { ch: ' ', red: false }, ...words[i + 1]]);
+      words.splice(i, 2, [...words[i], BLANK, ...words[i + 1]]);
     }
   }
 
@@ -124,7 +199,7 @@ function wrap(cells) {
       rows.push(row);
       row = [];
     }
-    row = row.length ? [...row, { ch: ' ', red: false }, ...w] : [...w];
+    row = row.length ? [...row, BLANK, ...w] : [...w];
   }
   if (row.length || !rows.length) rows.push(row);
   return rows;
@@ -137,20 +212,26 @@ function messageToGrid(message) {
     : Array.isArray(msg.text) ? msg.text
     : String(msg.text ?? '').split('\n');
 
-  const state = { red: false };
+  const state = { color: 'black', candyIndex: 0 };
   let rows = lines.flatMap(line => wrap(lineToCells(String(line), state)));
   while (rows.length && !rows[0].length) rows.shift();
   while (rows.length && !rows[rows.length - 1].length) rows.pop();
   rows = rows.slice(0, ROWS);
 
   const grid = Array.from({ length: ROWS }, () =>
-    Array.from({ length: COLS }, () => ({ ch: ' ', red: false })));
+    Array.from({ length: COLS }, () => BLANK));
   const top = Math.floor((ROWS - rows.length) / 2);
   rows.forEach((row, i) => {
     const left = Math.floor((COLS - row.length) / 2);
     row.forEach((cell, j) => { grid[top + i][left + j] = cell; });
   });
   return grid;
+}
+
+function setLetter(el, cell) {
+  el.textContent = cell.ch === ' ' ? '' : cell.ch;
+  el.classList.toggle('red', cell.color === 'red');
+  el.classList.toggle('green', cell.color === 'green');
 }
 
 /** Pull the old letters off, then slide the new ones in, left to right. */
@@ -160,15 +241,14 @@ function showGrid(grid, animate = true) {
     for (let c = 0; c < COLS; c++) {
       const slot = slots[r][c];
       const next = grid[r][c];
-      if (slot.ch === next.ch && slot.red === next.red) continue;
+      if (slot.ch === next.ch && slot.color === next.color) continue;
 
       slot.ch = next.ch;
-      slot.red = next.red;
+      slot.color = next.color;
       const el = slot.el;
 
       if (!animate) {
-        el.textContent = next.ch === ' ' ? '' : next.ch;
-        el.classList.toggle('red', next.red);
+        setLetter(el, next);
         continue;
       }
 
@@ -178,8 +258,7 @@ function showGrid(grid, animate = true) {
 
       setTimeout(() => el.classList.add('out'), outDelay);
       setTimeout(() => {
-        el.textContent = next.ch === ' ' ? '' : next.ch;
-        el.classList.toggle('red', next.red);
+        setLetter(el, next);
         el.classList.remove('out');
         el.classList.add('enter');
         el.getBoundingClientRect(); // start the slide from the 'enter' position
@@ -203,6 +282,7 @@ async function load() {
     lastJson = text;
 
     const data = JSON.parse(text);
+    setTheme(data.theme);
     setLights(data.lights);
     setArrowDirection(data.arrow);
     showGrid(messageToGrid(data.message ?? ''), !firstShow);

@@ -11,6 +11,7 @@
   --steel-edge: #34373C;
   --letter: #111111;
   --letter-red: #D0202E;
+  --letter-green: #13803A;
 }
 
 body {
@@ -73,27 +74,24 @@ body {
 
 .bulb-socket { fill: #2A2C30; }
 .bulb-glass { fill: url(#glass-off); stroke: rgba(0, 0, 0, 0.35); stroke-width: 1.5; }
+.bulb-lit { fill: url(#glass-on); opacity: 0; }
 .bulb-halo { fill: url(#halo); opacity: 0; }
 
-.lights-on .bulb-glass { fill: url(#glass-on); }
+.lights-on .bulb-lit,
 .lights-on .bulb-halo { opacity: 1; }
 
 /* Chase: three sets of bulbs take turns, so the light runs toward the tip */
-.lights-chase .bulb * { animation: 1.2s steps(1, end) infinite; }
-.lights-chase .bulb .bulb-glass { animation-name: glass-third; }
-.lights-chase .bulb .bulb-halo { animation-name: halo-third; }
+.lights-chase .bulb-lit,
+.lights-chase .bulb-halo { animation: on-third 1.2s steps(1, end) infinite; }
 .lights-chase .bulb.phase-1 * { animation-delay: -0.8s; }
 .lights-chase .bulb.phase-2 * { animation-delay: -0.4s; }
 
 /* Flash: all bulbs on and off together, like the real sign */
-.lights-blink .bulb * { animation: 1.4s steps(1, end) infinite; }
-.lights-blink .bulb .bulb-glass { animation-name: glass-half; }
-.lights-blink .bulb .bulb-halo { animation-name: halo-half; }
+.lights-blink .bulb-lit,
+.lights-blink .bulb-halo { animation: on-half 1.4s steps(1, end) infinite; }
 
-@keyframes glass-third { 0% { fill: url(#glass-on); } 33% { fill: url(#glass-off); } }
-@keyframes halo-third  { 0% { opacity: 1; } 33% { opacity: 0; } }
-@keyframes glass-half  { 0% { fill: url(#glass-on); } 50% { fill: url(#glass-off); } }
-@keyframes halo-half   { 0% { opacity: 1; } 50% { opacity: 0; } }
+@keyframes on-third { 0% { opacity: 1; } 33% { opacity: 0; } }
+@keyframes on-half  { 0% { opacity: 1; } 50% { opacity: 0; } }
 
 /* --- Letter panel ---------------------------------------------------------- */
 
@@ -160,6 +158,7 @@ body {
 }
 
 .letter.red { color: var(--letter-red); }
+.letter.green { color: var(--letter-green); }
 
 /* Taking a letter off its track */
 .letter.out {
@@ -172,4 +171,38 @@ body {
   opacity: 0;
   transform: translateX(160%) rotate(var(--tilt, 0deg));
   transition: none;
+}
+
+/* --- Christmas theme ------------------------------------------------------- */
+
+.snow {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.snowcap {
+  display: none;
+  fill: #FFFFFF;
+  stroke: #DDE6F0;
+  stroke-width: 2;
+}
+
+.theme-christmas .snowcap { display: inline; }
+
+/* Red, green and gold bulbs, repeating */
+.theme-christmas .tint-red .bulb-lit { fill: url(#glass-red); }
+.theme-christmas .tint-red .bulb-halo { fill: url(#halo-red); }
+.theme-christmas .tint-green .bulb-lit { fill: url(#glass-green); }
+.theme-christmas .tint-green .bulb-halo { fill: url(#halo-green); }
+.theme-christmas .tint-gold .bulb-lit { fill: url(#glass-gold); }
+.theme-christmas .tint-gold .bulb-halo { fill: url(#halo-gold); }
+
+/* A colder, snowier night sky */
+.theme-christmas .scene {
+  background:
+    radial-gradient(ellipse 60% 45% at 50% 52%, rgba(255, 244, 214, 0.16), transparent 70%),
+    linear-gradient(180deg, #0E1A33 0%, #22355A 60%, #3D5278 100%);
 }

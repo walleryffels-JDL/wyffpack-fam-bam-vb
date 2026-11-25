@@ -63,15 +63,17 @@ Edit `sign/messages.json`:
 ```json
 {
   "arrow": "right",
-  "lights": "blink",
-  "message": { "lines": ["WELCOME HOME", "{red}WYFF PACK"] }
+  "lights": "chase",
+  "theme": "christmas",
+  "message": { "lines": ["{candy}MERRY", "{candy}CHRISTMAS", "{black}FROM THE", "{green}WYFF PACK"] }
 }
 ```
 
 - **message** is plain text, which wraps and centers automatically, or `{ "lines": [...] }` for one line per row. The panel holds 4 rows of 20 letters.
-- `{red}` switches the letters that follow to red, and `{black}` switches back.
+- `{red}`, `{green}` and `{black}` switch the color of the letters that follow. `{candy}` alternates red and green letters.
 - **arrow** is `right` or `left`.
 - **lights** is `blink` (all flash together), `chase` (running toward the tip), `on` or `off`.
+- **theme** `"christmas"` adds red, green and gold bulbs, snow on the arrow and falling snow. Remove the line (or set it to `"none"`) to go back to the plain sign.
 
 ## URL options
 
