@@ -13,24 +13,21 @@ const bulbsEl = document.getElementById('bulbs');
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
-// Globe bulbs in chase order: along the rail from the far end toward the
-// arrow, then the back of the arrowhead, then the tip.
+// Globe bulbs in chase order: down the middle of the rail from the far end
+// toward the arrow, then the back of the arrowhead, then the tip.
 const BULBS = [
-  [835, 87, 'rail'], [675, 87, 'rail'], [515, 87, 'rail'], [355, 87, 'rail'], [200, 87, 'rail'],
-  [84, 52, 'head'], [84, 212, 'head'], [10, 132, 'head']
+  [835, 132], [675, 132], [515, 132], [355, 132], [200, 132],
+  [84, 52], [84, 212], [10, 132]
 ];
 
 function buildBulbs() {
-  BULBS.forEach(([x, y, where], i) => {
+  BULBS.forEach(([x, y], i) => {
     const g = document.createElementNS(SVG_NS, 'g');
     g.setAttribute('class', `bulb phase-${i % 3}`);
-    // Rail bulbs screw into a socket on top of the rail; arrowhead bulbs sit on its face
-    const socket = where === 'rail'
-      ? `<rect class="bulb-socket" x="${x - 8}" y="${y}" width="16" height="10" rx="2"/>`
-      : '';
-    g.innerHTML = `<circle class="bulb-halo" cx="${x}" cy="${y - 6}" r="40"/>`
-      + socket
-      + `<circle class="bulb-glass" cx="${x}" cy="${y - 8}" r="14"/>`;
+    // Each globe sits in a dark socket ring on the face of the arrow
+    g.innerHTML = `<circle class="bulb-halo" cx="${x}" cy="${y}" r="44"/>`
+      + `<circle class="bulb-socket" cx="${x}" cy="${y}" r="21"/>`
+      + `<circle class="bulb-glass" cx="${x}" cy="${y}" r="17"/>`;
     bulbsEl.appendChild(g);
   });
 }
